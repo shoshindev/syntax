@@ -68,7 +68,7 @@ svg.i { width: 0.9375rem; height: 0.9375rem; flex: none; fill: none; stroke: cur
 /* ---------- nav bar ---------- */
 .nav {
   grid-area: nav; display: flex; align-items: center; gap: 0.625rem 0.75rem; flex-wrap: wrap;
-  padding: 0.625rem var(--gutter) 0.625rem 1.25rem; border-bottom: 1px solid var(--line);
+  padding: 0.625rem var(--gutter); border-bottom: 1px solid var(--line);
 }
 .brand { margin: 0 auto 0 0; font: 600 1.1875rem/1.1 var(--font-sans); letter-spacing: -0.02em; white-space: nowrap; }
 .brand em { font: italic 400 1.18em/1 var(--font-serif); letter-spacing: -0.01em; color: var(--accent); padding-left: 0.05em; }
@@ -110,7 +110,7 @@ svg.i { width: 0.9375rem; height: 0.9375rem; flex: none; fill: none; stroke: cur
 /* The task list scrolls; the description stays pinned at the bottom of the sidebar. */
 .tasks {
   flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
-  display: flex; flex-direction: column; gap: 2px; margin: 0; padding: 0.875rem 0.625rem; list-style: none;
+  display: flex; flex-direction: column; gap: 2px; margin: 0; padding: 0.875rem var(--gutter); list-style: none;
 }
 .task {
   display: grid; gap: 2px; width: 100%; padding: 0.5rem 0.625rem; text-align: left; cursor: pointer;
@@ -119,7 +119,8 @@ svg.i { width: 0.9375rem; height: 0.9375rem; flex: none; fill: none; stroke: cur
 .task b { font: 500 0.7812rem/1.2 var(--font-mono); }
 .task:hover { background: color-mix(in srgb, var(--surface) 70%, transparent); }
 .task[aria-pressed="true"] { background: var(--surface); border-color: var(--line-strong); }
-.about { flex: none; display: grid; gap: 0.5rem; padding: 0.875rem 1.25rem 1.125rem; border-top: 1px solid var(--line); color: var(--muted); font-size: 0.7812rem; }
+/* Left padding = list inset + task padding + task border, so the text lines up with the task names. */
+.about { flex: none; display: grid; gap: 0.5rem; padding: 0.875rem var(--gutter) 1.125rem calc(var(--gutter) + 0.625rem + 1px); border-top: 1px solid var(--line); color: var(--muted); font-size: 0.7812rem; }
 .about p { margin: 0; color: var(--ink); text-wrap: pretty; }
 .about a { text-decoration: none; }
 .about a:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 0.1875rem; }
