@@ -37,9 +37,9 @@ To change which programs are included, edit the `TASKS` list at the top of `scri
 
 The site is plain static files, so free static hosting works. With GitHub Pages:
 
-1. Create an empty repository named `syntax-side-by-side` on GitHub and push this folder to it.
+1. Create an empty repository named `syntax-comparison` on GitHub and push this folder to it.
 2. In the repository, open **Settings → Pages**, choose **Deploy from a branch**, then branch `main` and folder `/ (root)`.
-3. After a minute the site is live at `https://<your-username>.github.io/syntax-side-by-side/`.
+3. After a minute the site is live at `https://<your-username>.github.io/syntax-comparison/`.
 
 Cloudflare Pages and Netlify also work: point them at the repository with no build command and `/` as the output folder.
 
