@@ -1,0 +1,15 @@
+{
+  "name": "syntax-side-by-side",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Compare the same program in many programming languages, side by side.",
+  "type": "module",
+  "scripts": {
+    "start": "python3 -m http.server 8080",
+    "data": "node scripts/build-data.mjs",
+    "data:refresh": "node scripts/build-data.mjs --refresh"
+  },
+  "devDependencies": {
+    "shiki": "4.4.3"
+  }
+}

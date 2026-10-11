@@ -1,0 +1,898 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Syntax Side by Side</title>
+<meta name="description" content="Compare the same program in many programming languages, side by side, with syntax highlighting.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400..700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400..600&display=swap">
+<style>
+/* Layout: a nav bar across the top, tasks in a left sidebar, and a lane of code cards that scrolls sideways.
+   On phones the sidebar becomes a row of task tabs under the nav bar. */
+:root {
+  --bg: #f6f5f3;
+  --surface: #ffffff;
+  --ink: #17171a;
+  --muted: #63636c;
+  --line: #e3e1dc;
+  --line-strong: #cfccc6;
+  --accent: #c24028;
+  --accent-ink: #ffffff;
+  --accent-soft: #f7e4df;
+  --font-sans: "Geist", "Helvetica Neue", "Segoe UI", system-ui, sans-serif;
+  --font-serif: "Instrument Serif", Georgia, "Times New Roman", serif;
+  --font-code: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --gutter: 16px;
+  --radius: 8px;
+  --side: 14rem;
+  --col-min: 19rem;
+  --col-max: calc(100vw - var(--side) - 2 * var(--gutter) - 2.5rem); /* always leave a peek of the next card */
+  color-scheme: light;
+}
+/* Dark palette: the viewer's own choice (data-ui) wins, then a host page's data-theme, then the system setting. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]):not([data-ui="light"]) {
+    --bg: #101012; --surface: #18181b; --ink: #ededed; --muted: #9a9aa2; --line: #26262b; --line-strong: #38383f;
+    --accent: #f5654a; --accent-ink: #101012; --accent-soft: #2b1814;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"]:not([data-ui="light"]), :root[data-ui="dark"] {
+  --bg: #101012; --surface: #18181b; --ink: #ededed; --muted: #9a9aa2; --line: #26262b; --line-strong: #38383f;
+  --accent: #f5654a; --accent-ink: #101012; --accent-soft: #2b1814;
+  color-scheme: dark;
+}
+
+html { box-sizing: border-box; height: 100%; }
+*, *::before, *::after { box-sizing: inherit; }
+body { height: 100%; margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.5 var(--font-sans); -webkit-font-smoothing: antialiased; }
+button, input, select { font: inherit; color: inherit; }
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+svg.i { width: 15px; height: 15px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+
+.app {
+  position: relative; height: 100%; display: grid; min-width: 0;
+  grid-template-columns: var(--side) minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-areas: "nav nav" "side lane";
+}
+
+/* ---------- nav bar ---------- */
+.nav {
+  grid-area: nav; display: flex; align-items: center; gap: 10px 12px; flex-wrap: wrap;
+  padding: 10px var(--gutter) 10px 20px; border-bottom: 1px solid var(--line);
+}
+.brand { margin: 0 auto 0 0; font: 600 19px/1.1 var(--font-sans); letter-spacing: -0.02em; white-space: nowrap; }
+.brand em { font: italic 400 1.18em/1 var(--font-serif); letter-spacing: -0.01em; color: var(--accent); padding-left: 0.05em; }
+.controls { display: flex; align-items: center; gap: 8px; }
+.field {
+  display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 2px 0 11px;
+  border: 1px solid var(--line-strong); border-radius: 7px; font: 500 12.5px/1 var(--font-code);
+}
+.field > span { color: var(--muted); }
+.field select {
+  appearance: none; border: 0; background: transparent; height: 32px; padding: 0 24px 0 2px; cursor: pointer;
+  background-image: linear-gradient(45deg, transparent 50%, currentColor 50%), linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position: calc(100% - 12px) 14px, calc(100% - 8px) 14px; background-size: 4px 4px; background-repeat: no-repeat;
+}
+.field select:focus-visible { outline: none; }
+.field:focus-within { outline: 2px solid var(--accent); outline-offset: 1px; }
+.field select option { background: var(--surface); color: var(--ink); }
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 7px; height: 34px; padding: 0 14px;
+  border: 1px solid var(--line-strong); border-radius: 7px; background: transparent; cursor: pointer; white-space: nowrap;
+  font: 500 12.5px/1 var(--font-code);
+}
+.btn:hover { border-color: var(--muted); }
+.btn.square { width: 34px; padding: 0; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn.primary:hover { background: color-mix(in srgb, var(--accent) 88%, var(--ink)); }
+
+/* ---------- sidebar ---------- */
+.side {
+  grid-area: side; display: flex; flex-direction: column; gap: 18px; min-height: 0; overflow-y: auto;
+  padding: 14px 10px 18px; border-right: 1px solid var(--line);
+}
+.tasks { display: flex; flex-direction: column; gap: 2px; margin: 0; padding: 0; list-style: none; }
+.task {
+  display: grid; gap: 2px; width: 100%; padding: 8px 10px; text-align: left; cursor: pointer;
+  border: 1px solid transparent; border-radius: 7px; background: transparent;
+}
+.task b { font: 500 12.5px/1.2 var(--font-code); }
+.task small { color: var(--muted); font-size: 11.5px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.task:hover { background: color-mix(in srgb, var(--surface) 70%, transparent); }
+.task[aria-pressed="true"] { background: var(--surface); border-color: var(--line-strong); }
+.about { display: grid; gap: 8px; padding: 0 10px; color: var(--muted); font-size: 12.5px; }
+.about p { margin: 0; color: var(--ink); text-wrap: pretty; }
+.about a { text-decoration: none; }
+.about a:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+.about .nowrap { white-space: nowrap; }
+.about svg.i { width: 11px; height: 11px; vertical-align: -1px; margin-left: 2px; }
+
+/* ---------- lane + code cards ---------- */
+.lane {
+  grid-area: lane; position: relative; /* keeps visually hidden labels inside the scroller */
+  min-height: 0; display: flex; align-items: stretch; gap: 12px;
+  overflow-x: auto; overflow-y: hidden; padding: 16px var(--gutter);
+  scroll-padding-inline: var(--gutter); overscroll-behavior-x: contain;
+}
+.lane:focus-visible { outline-offset: -4px; }
+.panel {
+  --pbg: #ffffff; --pfg: #1f2328;
+  --pmuted: color-mix(in srgb, var(--pfg) 70%, var(--pbg));
+  --pfaint: color-mix(in srgb, var(--pfg) 36%, var(--pbg));
+  --pline: color-mix(in srgb, var(--pfg) 12%, var(--pbg));
+  --phover: color-mix(in srgb, var(--pfg) 8%, var(--pbg));
+  position: relative;
+  /* Sized to the code: --w is the widest line in characters, not counting comments (they wrap).
+     6.7ch = line numbers + a little slack; 18px = right padding + borders. Font is set here so 1ch is the code font's. */
+  font: 400 13px/1.62 var(--font-code);
+  flex: 0 0 auto;
+  width: calc((var(--w, 40) + 6.7) * 1ch + 18px + var(--sbw, 0px));
+  min-width: var(--col-min); max-width: var(--col-max);
+  display: flex; flex-direction: column;
+  background: var(--pbg); color: var(--pfg);
+  border: 1px solid color-mix(in srgb, var(--pfg) 12%, var(--line)); border-radius: var(--radius);
+  overflow: hidden;
+}
+.p-head, .p-sol, .p-foot, .empty { font-family: var(--font-sans); line-height: 1.45; }
+.p-head { display: flex; align-items: center; gap: 2px; padding: 6px 6px 6px 4px; border-bottom: 1px solid var(--pline); }
+.p-lang {
+  display: inline-flex; align-items: center; gap: 6px; min-width: 0; height: 32px; padding: 0 8px 0 10px;
+  border: 0; border-radius: 6px; background: transparent; cursor: pointer; font: 600 14.5px/1 var(--font-sans); letter-spacing: -0.01em;
+}
+.p-lang span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.p-lang svg.i { color: var(--pmuted); }
+.p-lang:hover, .icon:hover { background: var(--phover); }
+.p-head .spacer { flex: 1; }
+.icon {
+  display: inline-grid; place-items: center; width: 32px; height: 32px; flex: none;
+  border: 0; border-radius: 6px; background: transparent; color: var(--pmuted); cursor: pointer;
+}
+.icon:hover { color: var(--pfg); }
+.p-sol { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-bottom: 1px solid var(--pline); font-size: 12px; color: var(--pmuted); }
+.p-sol select {
+  flex: 1; min-width: 0; height: 28px; padding: 0 26px 0 8px; border: 1px solid var(--pline); border-radius: 6px;
+  background-color: var(--pbg); color: var(--pfg); appearance: none; cursor: pointer; font: 500 12px/1 var(--font-code);
+  background-image: linear-gradient(45deg, transparent 50%, currentColor 50%), linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position: calc(100% - 13px) 12px, calc(100% - 9px) 12px; background-size: 4px 4px; background-repeat: no-repeat;
+}
+.p-sol .count { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.p-code { flex: 1; min-height: 0; overflow: auto; scrollbar-gutter: stable; }
+.p-code .shiki {
+  margin: 0; padding: 12px 16px 16px 0; min-height: 100%; white-space: pre;
+  /* The code keeps its full width even when the card is capped, so comments wrap at the code's width
+     and the whole block scrolls sideways as one shape. */
+  width: calc((var(--w, 40) + 6.7) * 1ch + 16px); min-width: 100%;
+  background: transparent !important; color: var(--pfg); font: inherit; font-variant-ligatures: none; tab-size: 4;
+  counter-reset: ln;
+}
+.p-code .shiki:focus-visible { outline-offset: -2px; border-radius: 4px; }
+/* Each line hangs: wrapped comment rows continue under the line's own indentation, clear of the number. */
+.p-code .line {
+  display: block; min-height: 1.62em; counter-increment: ln;
+  padding-left: calc(6.2ch + var(--ind, 0ch)); text-indent: calc(-6.2ch - var(--ind, 0ch));
+}
+.p-code .line::before {
+  content: counter(ln); display: inline-block; width: 4.2ch; padding-right: 1.6ch; margin-right: 0.4ch; text-indent: 0;
+  text-align: right; color: var(--pfaint); user-select: none; font-variant-numeric: tabular-nums;
+}
+.p-code .cm { white-space: pre-wrap; overflow-wrap: anywhere; }
+.p-foot {
+  display: flex; align-items: center; gap: 4px 12px; flex-wrap: wrap; padding: 8px 12px;
+  border-top: 1px solid var(--pline); color: var(--pmuted); font-size: 11.5px; font-variant-numeric: tabular-nums;
+}
+.p-foot .note { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.p-foot a { margin-left: auto; display: inline-flex; align-items: center; gap: 4px; text-decoration: none; white-space: nowrap; }
+.p-foot a:hover { color: var(--pfg); text-decoration: underline; text-underline-offset: 3px; }
+.p-foot svg.i { width: 11px; height: 11px; }
+.empty { flex: 1; display: grid; place-content: center; gap: 14px; padding: 24px; text-align: center; color: var(--pmuted); }
+.empty p { margin: 0; max-width: 30ch; }
+.empty strong { color: var(--pfg); }
+.empty button {
+  justify-self: center; height: 34px; padding: 0 14px; border-radius: 7px; cursor: pointer;
+  border: 1px solid var(--pline); background: var(--phover); color: var(--pfg); font: 500 12.5px/1 var(--font-code);
+}
+.loading .p-code, .lane.is-loading .panel { opacity: 0.55; transition: opacity 0.15s; }
+.add {
+  flex: 0 0 12rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+  border: 1px dashed var(--line-strong); border-radius: var(--radius); background: transparent; color: var(--muted); cursor: pointer;
+}
+.add:hover { border-color: var(--accent); color: var(--ink); }
+.add .plus { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--line-strong); color: var(--accent); }
+.add b { font: 500 12.5px/1.2 var(--font-code); color: var(--ink); }
+.add small { font-size: 11.5px; font-variant-numeric: tabular-nums; }
+.lane.is-empty .add { flex-basis: min(22rem, var(--col-max)); }
+
+/* ---------- language picker ---------- */
+dialog.picker {
+  width: min(34rem, calc(100vw - 2 * var(--gutter))); max-height: min(38rem, calc(100% - 6rem));
+  margin: 8vh auto auto; padding: 0; border: 1px solid var(--line-strong); border-radius: 10px;
+  background: var(--surface); color: var(--ink); box-shadow: 0 24px 64px rgb(0 0 0 / 0.28); overflow: hidden;
+}
+dialog.picker[open] { display: flex; flex-direction: column; }
+dialog.picker::backdrop { background: rgb(8 8 10 / 0.5); }
+.pk-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 16px 18px 10px; }
+.pk-head h2 { margin: 0; font: 600 17px/1.2 var(--font-sans); letter-spacing: -0.01em; }
+.pk-head span { color: var(--muted); font-size: 12.5px; font-variant-numeric: tabular-nums; }
+.pk-search { position: relative; margin: 0 14px 8px; }
+.pk-search svg.i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--muted); }
+.pk-search input { width: 100%; height: 40px; padding: 0 12px 0 36px; border: 1px solid var(--line-strong); border-radius: 7px; background: var(--bg); font-size: 14.5px; }
+.pk-search input:focus { outline: 2px solid var(--accent); outline-offset: -1px; border-color: transparent; }
+.pk-list { flex: 1; min-height: 0; overflow-y: auto; padding: 0 8px 8px; overscroll-behavior: contain; }
+.pk-group { margin: 10px 10px 4px; font-size: 11.5px; font-weight: 600; color: var(--muted); }
+.pk-opt { display: flex; align-items: center; gap: 8px; min-height: 36px; padding: 6px 10px; border-radius: 6px; cursor: pointer; }
+.pk-opt .nm { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
+.pk-opt .meta { color: var(--muted); font-size: 12px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.pk-opt .tag { font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 99px; background: var(--accent-soft); color: var(--ink); white-space: nowrap; }
+.pk-opt[aria-selected="true"] { background: var(--accent); color: var(--accent-ink); }
+.pk-opt[aria-selected="true"] .meta { color: inherit; opacity: 0.85; }
+.pk-opt[aria-selected="true"] .tag { background: color-mix(in srgb, var(--accent-ink) 22%, transparent); color: inherit; }
+.pk-none { padding: 28px 12px; text-align: center; color: var(--muted); }
+.pk-foot { display: flex; gap: 16px; padding: 10px 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; }
+.pk-foot kbd { font: 500 11px/1 var(--font-code); padding: 2px 5px; border: 1px solid var(--line-strong); border-radius: 4px; background: var(--bg); }
+
+/* ---------- card menu + toast ---------- */
+.menu {
+  position: fixed; inset: auto; margin: 0; min-width: 12rem; padding: 6px;
+  border: 1px solid var(--line-strong); border-radius: 8px; background: var(--surface); color: var(--ink);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.12);
+}
+.menu button, .menu a {
+  display: flex; align-items: center; gap: 10px; width: 100%; height: 34px; padding: 0 10px; border: 0; border-radius: 5px;
+  background: transparent; text-align: left; text-decoration: none; cursor: pointer; font-size: 13px;
+}
+.menu button:hover, .menu a:hover, .menu button:focus-visible, .menu a:focus-visible { background: var(--accent-soft); outline: none; }
+.menu button:disabled { opacity: 0.4; cursor: default; background: transparent; }
+.menu hr { border: 0; border-top: 1px solid var(--line); margin: 5px 4px; }
+.toast {
+  position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%);
+  padding: 9px 14px; border-radius: 7px; background: var(--ink); color: var(--bg); font-size: 13px; font-weight: 500;
+  pointer-events: none; transition: opacity 0.18s;
+}
+.toast:empty { opacity: 0; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+/* ---------- phones ---------- */
+@media (max-width: 720px) {
+  :root { --col-max: calc(100vw - 2 * var(--gutter) - 28px); --col-min: min(19rem, var(--col-max)); }
+  .app { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto minmax(0, 1fr); grid-template-areas: "nav" "side" "lane"; }
+  .nav { padding: 12px var(--gutter) 10px; }
+  .brand { flex-basis: 100%; }
+  .controls { flex: 1; }
+  .controls .field { flex: 1; min-width: 0; }
+  .controls .field select { flex: 1; min-width: 0; }
+  .field-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  .side { overflow: visible; gap: 6px; padding: 10px 0; border-right: 0; border-bottom: 1px solid var(--line); }
+  .tasks {
+    flex-direction: row; overflow-x: auto; scrollbar-width: none; padding: 0 28px 0 var(--gutter);
+    mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
+  }
+  .tasks::-webkit-scrollbar { display: none; }
+  .tasks li { flex: none; }
+  .task { width: auto; }
+  .about { padding: 0 var(--gutter); gap: 2px; }
+  .lane { scroll-snap-type: x proximity; }
+  .panel, .add { scroll-snap-align: start; }
+  .add-long { display: none; }
+}
+@media (pointer: coarse) {
+  .icon, .p-lang { height: 44px; }
+  .icon { width: 44px; }
+  .btn, .field { height: 44px; }
+  .btn.square { width: 44px; }
+  .p-sol select { height: 38px; }
+  .pk-opt { min-height: 44px; }
+  .pk-foot { display: none; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="nav">
+    <h1 class="brand">Syntax <em>side by side</em></h1>
+    <div class="controls">
+      <label class="field" for="theme">
+        <span class="field-label">Theme</span>
+        <select id="theme"></select>
+      </label>
+      <button class="btn square" id="mode" type="button" aria-label="Switch to dark theme" title="Switch to dark theme"></button>
+      <button class="btn primary" id="addTop" type="button" aria-label="Add language">
+        <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+        <span>Add<span class="add-long"> language</span></span>
+      </button>
+    </div>
+  </header>
+
+  <nav class="side" aria-label="Tasks">
+    <ul class="tasks" id="tasks"></ul>
+    <div class="about" id="about"></div>
+  </nav>
+
+  <main class="lane" id="lane" tabindex="0" aria-label="Code cards, scroll sideways to see more"></main>
+</div>
+
+<dialog class="picker" id="picker" aria-labelledby="pkTitle">
+  <div class="pk-head">
+    <h2 id="pkTitle">Add a language</h2>
+    <span id="pkCount"></span>
+  </div>
+  <div class="pk-search">
+    <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+    <input id="pkInput" type="search" placeholder="Search languages" autocomplete="off" spellcheck="false"
+      role="combobox" aria-expanded="true" aria-controls="pkList" aria-autocomplete="list" aria-label="Search languages">
+  </div>
+  <div class="pk-list" id="pkList" role="listbox" aria-label="Languages"></div>
+  <div class="pk-foot" aria-hidden="true">
+    <span><kbd>↑</kbd> <kbd>↓</kbd> move</span><span><kbd>Enter</kbd> choose</span><span><kbd>Esc</kbd> close</span>
+  </div>
+</dialog>
+
+<div class="menu" id="menu" popover role="menu" aria-label="Card actions">
+  <button type="button" role="menuitem" data-menu="left">
+    <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 19-7-7 7-7M19 12H5"/></svg>Move left
+  </button>
+  <button type="button" role="menuitem" data-menu="right">
+    <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>Move right
+  </button>
+  <hr>
+  <button type="button" role="menuitem" data-menu="copy">
+    <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copy code
+  </button>
+  <a role="menuitem" data-menu="open" href="https://rosettacode.org/" target="_blank" rel="noopener">
+    <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 3h6v6M10 14 21 3M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>View on Rosetta Code
+  </a>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script type="module">
+// Must match the shiki version in package.json: the data build uses it to measure code widths.
+const SHIKI_URL = 'https://cdn.jsdelivr.net/npm/shiki@4.4.3/+esm';
+const STORE = 'syntax-side-by-side:v1';
+const UI_KEY = 'syntax-side-by-side:ui';
+
+// The five most-installed VS Code colour themes. GitHub and Ayu follow the page's light/dark setting.
+const THEMES = [
+  { id: 'github', name: 'GitHub', light: 'github-light-default', dark: 'github-dark-default' },
+  { id: 'one-dark-pro', name: 'One Dark Pro', light: 'one-dark-pro', dark: 'one-dark-pro' },
+  { id: 'dracula', name: 'Dracula', light: 'dracula', dark: 'dracula' },
+  { id: 'ayu', name: 'Ayu', light: 'ayu-light', dark: 'ayu-dark' },
+  { id: 'monokai', name: 'Monokai', light: 'monokai', dark: 'monokai' },
+];
+// Editor colours, so cards paint correctly before the highlighter has loaded.
+const THEME_COLORS = {
+  'github-light-default': ['#ffffff', '#1f2328', 'light'], 'github-dark-default': ['#0d1117', '#e6edf3', 'dark'],
+  'one-dark-pro': ['#282c34', '#abb2bf', 'dark'], dracula: ['#282a36', '#f8f8f2', 'dark'],
+  'ayu-light': ['#f8f9fa', '#5c6166', 'light'], 'ayu-dark': ['#0d1017', '#bfbdb6', 'dark'], monokai: ['#272822', '#f8f8f2', 'dark'],
+};
+const POPULAR = ['Python', 'JavaScript', 'TypeScript', 'Java', 'C#', 'C++', 'C', 'Go', 'Rust', 'Kotlin', 'Swift', 'Ruby',
+  'PHP', 'Dart', 'Scala', 'Elixir', 'Haskell', 'Lua', 'Julia', 'Zig', 'OCaml', 'F#', 'Clojure', 'Gleam', 'Nim', 'Erlang', 'R', 'Perl'];
+const DEFAULT_PANELS = ['javascript', 'python', 'go', 'rust'];
+
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const norm = (s) => s.toLowerCase().replace(/[^a-z0-9+#]/g, '');
+const fmt = (n) => n.toLocaleString('en-US');
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)');
+// Scroll a container just enough to show a child. Unlike scrollIntoView it never moves the page or a parent frame.
+function reveal(container, el, { axis = 'x', pad = 16, smooth = false } = {}) {
+  const c = container.getBoundingClientRect(), r = el.getBoundingClientRect();
+  const [start, end, cStart, cEnd] = axis === 'x' ? [r.left, r.right, c.left, c.right] : [r.top, r.bottom, c.top, c.bottom];
+  let delta = 0;
+  if (end > cEnd - pad) delta = end - cEnd + pad;
+  if (start - delta < cStart + pad) delta = start - cStart - pad;
+  if (!delta) return;
+  const opts = { behavior: smooth && !reduceMotion.matches ? 'smooth' : 'auto' };
+  opts[axis === 'x' ? 'left' : 'top'] = delta;
+  container.scrollBy(opts);
+}
+const ICON = {
+  chev: '<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>',
+  more: '<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg>',
+  x: '<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>',
+  ext: '<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 3h6v6M10 14 21 3M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>',
+  plus: '<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>',
+  moon: '<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>',
+  sun: '<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>',
+};
+
+// ---------- state ----------
+let nextId = 1;
+const state = { task: 'fizzbuzz', theme: 'github', panels: [] };
+let hasSaved = false;
+try {
+  const saved = JSON.parse(localStorage.getItem(STORE) || 'null');
+  if (saved) {
+    hasSaved = true;
+    Object.assign(state, { task: saved.task || state.task, theme: saved.theme || state.theme });
+    state.panels = (saved.panels || []).map((p) => ({ id: nextId++, key: p.key, sol: Number.isInteger(p.sol) ? p.sol : null }));
+  }
+  const ui = localStorage.getItem(UI_KEY);
+  if (ui === 'light' || ui === 'dark') document.documentElement.dataset.ui = ui;
+} catch {}
+if (!hasSaved) state.panels = DEFAULT_PANELS.map((key) => ({ id: nextId++, key, sol: null }));
+function save() {
+  try {
+    localStorage.setItem(STORE, JSON.stringify({ task: state.task, theme: state.theme,
+      panels: state.panels.map(({ key, sol }) => ({ key, sol })) }));
+  } catch {}
+}
+
+// ---------- data ----------
+let index = null;
+const taskData = new Map();
+function loadTask(id) {
+  if (!taskData.has(id)) {
+    taskData.set(id, fetch(`data/${id}.json`).then((r) => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
+      .then((d) => { d.byKey = new Map(d.languages.map((l) => [l.key, l])); return d; })
+      .catch((e) => { taskData.delete(id); throw e; }));
+  }
+  return taskData.get(id);
+}
+let current = null; // loaded data for state.task
+
+// ---------- light / dark ----------
+const darkMq = matchMedia('(prefers-color-scheme: dark)');
+function pageIsDark() {
+  const root = document.documentElement;
+  if (root.dataset.ui) return root.dataset.ui === 'dark';
+  const host = root.getAttribute('data-theme');
+  return host === 'dark' || (host !== 'light' && darkMq.matches);
+}
+const modeBtn = $('#mode');
+function paintModeButton() {
+  const dark = pageIsDark();
+  const label = dark ? 'Switch to light theme' : 'Switch to dark theme';
+  modeBtn.innerHTML = dark ? ICON.sun : ICON.moon;
+  modeBtn.setAttribute('aria-label', label);
+  modeBtn.title = label;
+}
+
+// ---------- highlighting ----------
+let hlPromise = null;
+const langReady = new Map(), themeReady = new Map(), htmlCache = new Map();
+function highlighter() {
+  hlPromise ??= import(SHIKI_URL)
+    .then(({ createHighlighter, createJavaScriptRegexEngine }) =>
+      createHighlighter({ themes: [], langs: [], engine: createJavaScriptRegexEngine({ forgiving: true }) }))
+    .catch((e) => { console.warn('Highlighter unavailable, showing plain code.', e); return null; });
+  return hlPromise;
+}
+const once = (map, key, fn) => { if (!map.has(key)) map.set(key, fn().then(() => true, () => false)); return map.get(key); };
+function shikiTheme() {
+  const t = THEMES.find((x) => x.id === state.theme) || THEMES[0];
+  return pageIsDark() ? t.dark : t.light;
+}
+
+// Lines are blocks with their indentation in --ind, so wrapped comment rows can hang under it.
+const indentOf = (text) => text.match(/^ */)[0].length;
+const lineHtml = (text, inner) => `<span class="line" style="--ind:${indentOf(text)}ch">${inner}</span>`;
+const preHtml = (lines) => `<pre class="shiki" tabindex="0"><code>${lines.join('')}</code></pre>`;
+function plainHtml(code) {
+  return preHtml(code.split('\n').map((l) => lineHtml(l, esc(l))));
+}
+// Shiki tokens to HTML. Comment pieces get .cm, which wraps; everything else keeps its exact shape.
+function tokensHtml(lines) {
+  return preHtml(lines.map((tokens) => {
+    let text = '', inner = '';
+    for (const t of tokens) {
+      const style = `color:${t.color}${t.fontStyle & 1 ? ';font-style:italic' : ''}${t.fontStyle & 2 ? ';font-weight:600' : ''}${t.fontStyle & 4 ? ';text-decoration:underline' : ''}`;
+      // Split by scope so a token that mixes code and comment (rare) is classified piece by piece.
+      let run = '', runIsComment = null;
+      const flush = () => { if (run) inner += `<span${runIsComment ? ' class="cm"' : ''} style="${style}">${esc(run)}</span>`; run = ''; };
+      for (const piece of t.explanation?.length ? t.explanation : [{ content: t.content, scopes: [] }]) {
+        const isComment = piece.scopes.some((sc) => sc.scopeName.startsWith('comment'));
+        if (runIsComment !== null && isComment !== runIsComment) flush();
+        runIsComment = isComment;
+        run += piece.content;
+      }
+      flush();
+      text += t.content;
+    }
+    return lineHtml(text, inner);
+  }));
+}
+async function highlightInto(el, code, lang, cacheKey) {
+  const theme = shikiTheme();
+  const key = `${theme}|${cacheKey}`;
+  if (htmlCache.has(key)) { el.innerHTML = htmlCache.get(key); return; }
+  const hl = await highlighter();
+  if (!hl) return;
+  const [okLang, okTheme] = await Promise.all([once(langReady, lang, () => hl.loadLanguage(lang)), once(themeReady, theme, () => hl.loadTheme(theme))]);
+  if (!okLang || !okTheme || el.dataset.key !== key || !el.isConnected) return;
+  try {
+    const html = tokensHtml(hl.codeToTokens(code, { lang, theme, includeExplanation: 'scopeName' }).tokens);
+    htmlCache.set(key, html);
+    el.innerHTML = html;
+  } catch (e) { console.warn(`Could not highlight ${lang}`, e); }
+}
+
+// ---------- rendering ----------
+const lane = $('#lane');
+const rosettaUrl = (page) => `https://rosettacode.org/wiki/${encodeURIComponent(page.replace(/ /g, '_')).replace(/%2F/g, '/')}`;
+function renderTasks() {
+  $('#tasks').innerHTML = index.tasks.map((t) => `
+    <li><button type="button" class="task" data-task="${t.id}" aria-pressed="${t.id === state.task}">
+      <b>${esc(t.title)}</b>
+      <small>${t.median === 1 ? '1 line' : `${t.median} lines`}</small>
+    </button></li>`).join('');
+  const tab = $('#tasks [aria-pressed="true"]');
+  // Only matters on phones, where the task list is a sideways row.
+  if (tab && $('#tasks').scrollWidth > $('#tasks').clientWidth) reveal($('#tasks'), tab, { pad: 28 });
+  const t = index.tasks.find((x) => x.id === state.task);
+  $('#about').innerHTML = `
+    <p>${esc(t.blurb)}</p>
+    <a href="${rosettaUrl(t.page)}" target="_blank" rel="noopener">Code from Rosetta Code <span class="nowrap">(GNU FDL 1.3)${ICON.ext}</span></a>`;
+}
+
+function themeVars() {
+  const [bg, fg, type] = THEME_COLORS[shikiTheme()];
+  return `--pbg:${bg};--pfg:${fg};color-scheme:${type}`;
+}
+
+function panelHtml(p) {
+  const lang = current?.byKey.get(p.key);
+  const label = lang?.name || nameFromKey(p.key);
+  const head = `
+    <header class="p-head">
+      <button type="button" class="p-lang" data-action="change" aria-haspopup="dialog" title="Change language">
+        <span>${esc(label)}</span>${ICON.chev}<span class="sr-only">, change language</span>
+      </button>
+      <span class="spacer"></span>
+      <button type="button" class="icon" data-action="menu" aria-haspopup="menu" aria-label="More actions for ${esc(label)}" title="More actions">${ICON.more}</button>
+      <button type="button" class="icon" data-action="remove" aria-label="Remove ${esc(label)}" title="Remove card">${ICON.x}</button>
+    </header>`;
+  if (!current) {
+    return `<section class="panel loading" data-id="${p.id}" style="${themeVars()};--w:0" aria-label="${esc(label)}">${head}<div class="p-code"></div></section>`;
+  }
+  if (!lang) {
+    const task = index.tasks.find((t) => t.id === state.task);
+    return `<section class="panel" data-id="${p.id}" style="${themeVars()};--w:0" aria-label="${esc(label)}">${head}
+      <div class="empty"><p><strong>${esc(label)}</strong> has no ${esc(task.title)} entry on Rosetta Code yet.</p>
+      <button type="button" data-action="change">Choose another language</button></div></section>`;
+  }
+  const solIdx = p.sol != null && p.sol < lang.solutions.length ? p.sol : lang.def;
+  const sol = lang.solutions[solIdx];
+  const lines = sol.code.split('\n').length;
+  const hlName = sol.hl ? index.hlNames[sol.hl] : null;
+  const note = !sol.hl ? 'Plain text, no highlighter for this language'
+    : norm(hlName) !== norm(lang.name) ? `Highlighted as ${hlName}` : '';
+  const solPicker = lang.solutions.length > 1 ? `
+    <div class="p-sol">
+      <label class="sr-only" for="sol-${p.id}">Version of the ${esc(lang.name)} solution</label>
+      <select id="sol-${p.id}" data-action="sol">
+        ${lang.solutions.map((s, i) => `<option value="${i}"${i === solIdx ? ' selected' : ''}>${esc(s.title)}</option>`).join('')}
+      </select>
+      <span class="count">${solIdx + 1} of ${lang.solutions.length}</span>
+    </div>` : '';
+  return `<section class="panel" data-id="${p.id}" style="${themeVars()};--w:${sol.w}" aria-label="${esc(lang.name)}">${head}${solPicker}
+    <div class="p-code" data-code></div>
+    <footer class="p-foot">
+      <span>${fmt(lines)} ${lines === 1 ? 'line' : 'lines'}</span>
+      <span>${fmt(sol.code.length)} chars</span>
+      ${note ? `<span class="note" title="${esc(note)}">${esc(note)}</span>` : ''}
+      <a href="${esc(sol.link || lang.link)}" target="_blank" rel="noopener">Source ${ICON.ext}</a>
+    </footer></section>`;
+}
+
+function fillCode(section, p) {
+  const lang = current?.byKey.get(p.key);
+  const box = section.querySelector('[data-code]');
+  if (!lang || !box) return;
+  const solIdx = p.sol != null && p.sol < lang.solutions.length ? p.sol : lang.def;
+  const sol = lang.solutions[solIdx];
+  const cacheKey = `${state.task}|${p.key}|${solIdx}`;
+  const key = `${shikiTheme()}|${cacheKey}`;
+  box.dataset.key = key;
+  box.innerHTML = htmlCache.get(key) || plainHtml(sol.code);
+  if (sol.hl && !htmlCache.has(key)) highlightInto(box, sol.code, sol.hl, cacheKey);
+}
+
+// Language names from every task, so a card keeps its label on tasks that lack that language.
+const knownNames = new Map();
+const nameFromKey = (key) => knownNames.get(key) || key;
+
+function addCardHtml() {
+  const n = current ? current.languages.length : null;
+  return `<button type="button" class="add" data-action="add">
+    <span class="plus">${ICON.plus}</span><b>Add language</b>
+    <small>${n ? `${fmt(n)} available for this task` : 'Loading languages'}</small></button>`;
+}
+
+function renderLane() {
+  lane.classList.toggle('is-empty', state.panels.length === 0);
+  lane.innerHTML = state.panels.map(panelHtml).join('') + addCardHtml();
+  for (const p of state.panels) fillCode(lane.querySelector(`[data-id="${p.id}"]`), p);
+}
+function renderPanel(p) {
+  const old = lane.querySelector(`[data-id="${p.id}"]`);
+  if (!old) return renderLane();
+  const tpl = document.createElement('template');
+  tpl.innerHTML = panelHtml(p).trim();
+  const el = tpl.content.firstElementChild;
+  old.replaceWith(el);
+  fillCode(el, p);
+  return el;
+}
+
+async function setTask(id) {
+  state.task = id;
+  save();
+  renderTasks();
+  // Keep the current cards on screen (dimmed) until the new task's code arrives, so nothing jumps.
+  if (current) lane.classList.add('is-loading'); else renderLane();
+  try {
+    const data = await loadTask(id);
+    if (state.task !== id) return;
+    current = data;
+    renderLane();
+  } catch (e) {
+    lane.innerHTML = `<div class="empty" style="--pfg:var(--ink);--pbg:var(--bg)"><p>Could not load this task's code (${esc(e.message)}). Reload the page to try again.</p></div>`;
+  } finally {
+    if (state.task === id) lane.classList.remove('is-loading');
+  }
+}
+
+// ---------- language picker ----------
+const picker = $('#picker'), pkInput = $('#pkInput'), pkList = $('#pkList');
+let pickMode = null, pkItems = [], pkActive = 0, pkReturn = null;
+function openPicker(mode, from) {
+  if (!current) return;
+  pickMode = mode; pkReturn = from;
+  const task = index.tasks.find((t) => t.id === state.task);
+  $('#pkTitle').textContent = mode.type === 'add' ? 'Add a language' : 'Change language';
+  $('#pkCount').textContent = `${fmt(current.languages.length)} for ${task.title}`;
+  pkInput.value = '';
+  renderPicker();
+  picker.showModal();
+  pkInput.focus();
+}
+function renderPicker() {
+  const q = norm(pkInput.value.trim());
+  const onScreen = new Set(state.panels.map((p) => p.key));
+  const replacing = pickMode?.type === 'replace' ? state.panels.find((p) => p.id === pickMode.id)?.key : null;
+  let groups;
+  if (!q) {
+    const pop = POPULAR.map((n) => current.byKey.get(norm(n))).filter(Boolean);
+    groups = [['Popular', pop], ['All languages', current.languages]];
+  } else {
+    const hits = current.languages.filter((l) => l.key.includes(q) || norm(l.name).includes(q));
+    hits.sort((a, b) => (b.key.startsWith(q) - a.key.startsWith(q)) || a.name.localeCompare(b.name));
+    groups = [[`${hits.length} ${hits.length === 1 ? 'match' : 'matches'}`, hits]];
+  }
+  pkItems = [];
+  let html = '';
+  for (const [title, list] of groups) {
+    if (!list.length) continue;
+    const gid = `g-${title.replace(/\W+/g, '')}`;
+    html += `<div role="group" aria-labelledby="${gid}"><div class="pk-group" id="${gid}">${esc(title)}</div>`;
+    for (const l of list) {
+      const i = pkItems.push(l) - 1;
+      const n = l.solutions.length;
+      const tag = l.key === replacing ? '<span class="tag">Current</span>' : onScreen.has(l.key) ? '<span class="tag">On screen</span>' : '';
+      const plain = l.solutions[l.def].hl ? '' : 'plain text';
+      const meta = [n > 1 ? `${n} versions` : '', plain].filter(Boolean).join(', ');
+      html += `<div class="pk-opt" role="option" id="opt-${i}" data-i="${i}" aria-selected="false">
+        <span class="nm">${esc(l.name)}</span>${meta ? `<span class="meta">${meta}</span>` : ''}${tag}</div>`;
+    }
+    html += '</div>';
+  }
+  pkList.innerHTML = html || `<div class="pk-none">No language matches “${esc(pkInput.value.trim())}” for this task.</div>`;
+  setActive(0, false);
+}
+function setActive(i, scroll = true) {
+  if (!pkItems.length) { pkInput.removeAttribute('aria-activedescendant'); return; }
+  pkActive = Math.max(0, Math.min(pkItems.length - 1, i));
+  pkList.querySelectorAll('[aria-selected="true"]').forEach((el) => el.setAttribute('aria-selected', 'false'));
+  const el = document.getElementById(`opt-${pkActive}`);
+  el.setAttribute('aria-selected', 'true');
+  pkInput.setAttribute('aria-activedescendant', el.id);
+  if (scroll) reveal(pkList, el, { axis: 'y', pad: 4 });
+}
+function choose(l) {
+  pkReturn = null; // focus moves to the new or changed card instead
+  picker.close();
+  if (pickMode.type === 'add') {
+    const p = { id: nextId++, key: l.key, sol: null };
+    state.panels.push(p);
+    save();
+    renderLane();
+    const el = lane.querySelector(`[data-id="${p.id}"]`);
+    reveal(lane, el, { smooth: true });
+    el.querySelector('.p-lang').focus({ preventScroll: true });
+  } else {
+    const p = state.panels.find((x) => x.id === pickMode.id);
+    if (!p) return;
+    p.key = l.key; p.sol = null;
+    save();
+    renderPanel(p)?.querySelector('.p-lang').focus();
+  }
+}
+pkInput.addEventListener('input', renderPicker);
+pkInput.addEventListener('keydown', (e) => {
+  const page = 8;
+  if (e.key === 'ArrowDown') { e.preventDefault(); setActive(pkActive + 1); }
+  else if (e.key === 'ArrowUp') { e.preventDefault(); setActive(pkActive - 1); }
+  else if (e.key === 'PageDown') { e.preventDefault(); setActive(pkActive + page); }
+  else if (e.key === 'PageUp') { e.preventDefault(); setActive(pkActive - page); }
+  else if (e.key === 'Enter') { e.preventDefault(); if (pkItems[pkActive]) choose(pkItems[pkActive]); }
+  // A search field would clear itself on the first Esc; close the picker right away instead, like a command palette.
+  else if (e.key === 'Escape') { e.preventDefault(); picker.close(); }
+});
+pkList.addEventListener('click', (e) => {
+  const opt = e.target.closest('.pk-opt');
+  if (opt) choose(pkItems[+opt.dataset.i]);
+});
+pkList.addEventListener('pointermove', (e) => {
+  const opt = e.target.closest('.pk-opt');
+  if (opt && +opt.dataset.i !== pkActive) setActive(+opt.dataset.i, false);
+});
+picker.addEventListener('click', (e) => { if (e.target === picker) picker.close(); });
+picker.addEventListener('close', () => {
+  if (pkReturn?.isConnected && !picker.contains(document.activeElement)) pkReturn.focus({ preventScroll: true });
+});
+
+// ---------- card menu ----------
+const menu = $('#menu');
+let menuFor = null;
+function openMenu(btn, id) {
+  menuFor = id;
+  const i = state.panels.findIndex((p) => p.id === id);
+  const p = state.panels[i];
+  const lang = current?.byKey.get(p.key);
+  menu.querySelector('[data-menu="left"]').disabled = i === 0;
+  menu.querySelector('[data-menu="right"]').disabled = i === state.panels.length - 1;
+  menu.querySelector('[data-menu="copy"]').disabled = !lang;
+  const link = menu.querySelector('[data-menu="open"]');
+  link.href = lang ? (lang.solutions[p.sol ?? lang.def]?.link || lang.link) : 'https://rosettacode.org/';
+  menu.showPopover();
+  const r = btn.getBoundingClientRect(), mw = menu.offsetWidth, mh = menu.offsetHeight;
+  menu.style.left = `${Math.max(8, Math.min(r.right - mw, innerWidth - mw - 8))}px`;
+  menu.style.top = `${r.bottom + 6 + mh > innerHeight ? Math.max(8, r.top - mh - 6) : r.bottom + 6}px`;
+  menu.querySelector('button:not(:disabled)')?.focus();
+  menu._trigger = btn;
+}
+menu.addEventListener('click', async (e) => {
+  const item = e.target.closest('[data-menu]');
+  if (!item || item.disabled) return;
+  const i = state.panels.findIndex((p) => p.id === menuFor);
+  const p = state.panels[i];
+  const action = item.dataset.menu;
+  if (action === 'open') { menu.hidePopover(); return; }
+  if (action === 'copy') {
+    const lang = current.byKey.get(p.key);
+    const code = lang.solutions[p.sol ?? lang.def].code;
+    menu.hidePopover();
+    try { await navigator.clipboard.writeText(code); toast('Code copied'); }
+    catch {
+      const pre = lane.querySelector(`[data-id="${p.id}"] pre`);
+      const range = document.createRange(); range.selectNodeContents(pre);
+      const sel = getSelection(); sel.removeAllRanges(); sel.addRange(range);
+      toast('Code selected. Press Cmd+C or Ctrl+C to copy.');
+    }
+    return;
+  }
+  const j = action === 'left' ? i - 1 : i + 1;
+  [state.panels[i], state.panels[j]] = [state.panels[j], state.panels[i]];
+  save();
+  menu.hidePopover();
+  renderLane();
+  const el = lane.querySelector(`[data-id="${p.id}"]`);
+  reveal(lane, el);
+  el.querySelector('[data-action="menu"]').focus({ preventScroll: true });
+});
+menu.addEventListener('keydown', (e) => {
+  if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+  e.preventDefault();
+  const items = [...menu.querySelectorAll('[data-menu]')].filter((x) => !x.disabled);
+  const k = items.indexOf(document.activeElement);
+  items[(k + (e.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length].focus();
+});
+menu.addEventListener('toggle', (e) => {
+  if (e.newState === 'closed' && menu._trigger?.isConnected && (menu.contains(document.activeElement) || document.activeElement === document.body)) {
+    menu._trigger.focus({ preventScroll: true });
+  }
+});
+
+let toastTimer;
+function toast(msg) {
+  const t = $('#toast');
+  t.textContent = msg;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { t.textContent = ''; }, 2200);
+}
+
+// ---------- events ----------
+lane.addEventListener('click', (e) => {
+  const btn = e.target.closest('[data-action]');
+  if (!btn || btn.tagName === 'SELECT') return;
+  const section = btn.closest('.panel');
+  const id = section ? +section.dataset.id : null;
+  switch (btn.dataset.action) {
+    case 'add': openPicker({ type: 'add' }, btn); break;
+    case 'change': openPicker({ type: 'replace', id }, section.querySelector('.p-lang')); break;
+    case 'menu': openMenu(btn, id); break;
+    case 'remove': {
+      const i = state.panels.findIndex((p) => p.id === id);
+      state.panels.splice(i, 1);
+      save();
+      renderLane();
+      const next = lane.querySelectorAll('.panel')[i] || lane.querySelectorAll('.panel')[i - 1];
+      (next?.querySelector('[data-action="remove"]') || lane.querySelector('.add')).focus({ preventScroll: true });
+      break;
+    }
+  }
+});
+lane.addEventListener('change', (e) => {
+  if (e.target.dataset.action !== 'sol') return;
+  const id = +e.target.closest('.panel').dataset.id;
+  const p = state.panels.find((x) => x.id === id);
+  p.sol = +e.target.value;
+  save();
+  renderPanel(p)?.querySelector('select')?.focus();
+});
+// A vertical mouse wheel over headers, footers or the gaps moves the lane sideways.
+lane.addEventListener('wheel', (e) => {
+  if (e.ctrlKey || Math.abs(e.deltaX) >= Math.abs(e.deltaY)) return;
+  if (e.target.closest('.p-code, select')) return;
+  if (lane.scrollWidth <= lane.clientWidth) return;
+  lane.scrollLeft += e.deltaY;
+  e.preventDefault();
+}, { passive: false });
+lane.addEventListener('scroll', () => { if (menu.matches(':popover-open')) menu.hidePopover(); }, { passive: true });
+
+$('#tasks').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-task]');
+  if (b && b.dataset.task !== state.task) setTask(b.dataset.task);
+});
+$('#addTop').addEventListener('click', (e) => openPicker({ type: 'add' }, e.currentTarget));
+const themeSel = $('#theme');
+themeSel.innerHTML = THEMES.map((t) => `<option value="${t.id}">${esc(t.name)}${t.light !== t.dark ? ' (auto)' : ''}</option>`).join('');
+themeSel.value = THEMES.some((t) => t.id === state.theme) ? state.theme : 'github';
+themeSel.addEventListener('change', () => { state.theme = themeSel.value; save(); renderLane(); });
+modeBtn.addEventListener('click', () => {
+  const next = pageIsDark() ? 'light' : 'dark';
+  document.documentElement.dataset.ui = next;
+  try { localStorage.setItem(UI_KEY, next); } catch {}
+  paintModeButton();
+  renderLane();
+});
+paintModeButton();
+// Classic (non-overlay) scrollbars take room inside a card; add it to the card width so code still fits.
+(() => {
+  const probe = document.createElement('div');
+  probe.style.cssText = 'position:absolute;top:-999px;width:100px;height:50px;overflow:scroll';
+  document.body.append(probe);
+  document.documentElement.style.setProperty('--sbw', `${probe.offsetWidth - probe.clientWidth}px`);
+  probe.remove();
+})();
+// Follow the system or a host page switching light/dark, unless the viewer picked one here.
+const retheme = () => { paintModeButton(); if (index) renderLane(); };
+darkMq.addEventListener('change', retheme);
+new MutationObserver(retheme).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+// ---------- boot ----------
+(async () => {
+  highlighter();
+  try {
+    index = await fetch('data/index.json').then((r) => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); });
+  } catch (e) {
+    lane.innerHTML = `<div class="empty" style="--pfg:var(--ink);--pbg:var(--bg)"><p>Could not load the task list (${esc(e.message)}). Reload the page to try again.</p></div>`;
+    return;
+  }
+  for (const [key, name] of Object.entries(index.names || {})) knownNames.set(key, name);
+  if (!index.tasks.some((t) => t.id === state.task)) state.task = 'fizzbuzz';
+  await setTask(state.task);
+  // Warm the other tasks so switching is instant.
+  const idle = window.requestIdleCallback || ((fn) => setTimeout(fn, 1200));
+  idle(() => index.tasks.forEach((t) => loadTask(t.id).catch(() => {})));
+})();
+</script>
+</body>
+</html>
