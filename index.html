@@ -6,6 +6,7 @@
 <meta name="color-scheme" content="light dark">
 <title>Syntax Side by Side</title>
 <meta name="description" content="Compare the same program in many programming languages, side by side, with syntax highlighting.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23c24028'/%3E%3Crect x='7' y='8' width='7.5' height='16' rx='1.5' fill='%23fff'/%3E%3Crect x='17.5' y='8' width='7.5' height='16' rx='1.5' fill='%23fff' fill-opacity='.7'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400..700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400..600&display=swap">
@@ -24,9 +25,10 @@
   --accent-soft: #f7e4df;
   --font-sans: "Geist", "Helvetica Neue", "Segoe UI", system-ui, sans-serif;
   --font-serif: "Instrument Serif", Georgia, "Times New Roman", serif;
-  --font-code: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-  --gutter: 16px;
-  --radius: 8px;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace; /* buttons and labels */
+  --font-code: var(--font-mono); /* code in the cards; the font picker overrides it */
+  --gutter: 1rem;
+  --radius: 0.5rem;
   --side: 14rem;
   --col-min: 19rem;
   --col-max: calc(100vw - var(--side) - 2 * var(--gutter) - 2.5rem); /* always leave a peek of the next card */
@@ -46,14 +48,15 @@
   color-scheme: dark;
 }
 
-html { box-sizing: border-box; height: 100%; }
+html { box-sizing: border-box; height: 100%; font-size: 100%; }
+@media (min-width: 721px) { html { font-size: 125%; } }
 *, *::before, *::after { box-sizing: inherit; }
-body { height: 100%; margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.5 var(--font-sans); -webkit-font-smoothing: antialiased; }
+body { height: 100%; margin: 0; background: var(--bg); color: var(--ink); font: 0.875rem/1.5 var(--font-sans); -webkit-font-smoothing: antialiased; }
 button, input, select { font: inherit; color: inherit; }
 a { color: inherit; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-svg.i { width: 15px; height: 15px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+svg.i { width: 0.9375rem; height: 0.9375rem; flex: none; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
 
 .app {
   position: relative; height: 100%; display: grid; min-width: 0;
@@ -64,64 +67,73 @@ svg.i { width: 15px; height: 15px; flex: none; fill: none; stroke: currentColor;
 
 /* ---------- nav bar ---------- */
 .nav {
-  grid-area: nav; display: flex; align-items: center; gap: 10px 12px; flex-wrap: wrap;
-  padding: 10px var(--gutter) 10px 20px; border-bottom: 1px solid var(--line);
+  grid-area: nav; display: flex; align-items: center; gap: 0.625rem 0.75rem; flex-wrap: wrap;
+  padding: 0.625rem var(--gutter) 0.625rem 1.25rem; border-bottom: 1px solid var(--line);
 }
-.brand { margin: 0 auto 0 0; font: 600 19px/1.1 var(--font-sans); letter-spacing: -0.02em; white-space: nowrap; }
+.brand { margin: 0 auto 0 0; font: 600 1.1875rem/1.1 var(--font-sans); letter-spacing: -0.02em; white-space: nowrap; }
 .brand em { font: italic 400 1.18em/1 var(--font-serif); letter-spacing: -0.01em; color: var(--accent); padding-left: 0.05em; }
-.controls { display: flex; align-items: center; gap: 8px; }
+.pickers, .actions { display: flex; align-items: center; gap: 0.5rem; }
 .field {
-  display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 2px 0 11px;
-  border: 1px solid var(--line-strong); border-radius: 7px; font: 500 12.5px/1 var(--font-code);
+  display: inline-flex; align-items: center; gap: 0.375rem; height: 2.125rem; padding: 0 2px 0 0.6875rem;
+  border: 1px solid var(--line-strong); border-radius: 0.4375rem; font: 500 0.7812rem/1 var(--font-mono);
 }
 .field > span { color: var(--muted); }
 .field select {
-  appearance: none; border: 0; background: transparent; height: 32px; padding: 0 24px 0 2px; cursor: pointer;
+  appearance: none; border: 0; background: transparent; height: 2rem; padding: 0 1.5rem 0 2px; cursor: pointer;
+  width: 11rem; text-overflow: ellipsis;
   background-image: linear-gradient(45deg, transparent 50%, currentColor 50%), linear-gradient(135deg, currentColor 50%, transparent 50%);
-  background-position: calc(100% - 12px) 14px, calc(100% - 8px) 14px; background-size: 4px 4px; background-repeat: no-repeat;
+  background-position: calc(100% - 0.75rem) 0.875rem, calc(100% - 0.5rem) 0.875rem; background-size: 0.25rem 0.25rem; background-repeat: no-repeat;
 }
 .field select:focus-visible { outline: none; }
 .field:focus-within { outline: 2px solid var(--accent); outline-offset: 1px; }
-.field select option { background: var(--surface); color: var(--ink); }
+.field select option, .field select optgroup { background: var(--surface); color: var(--ink); }
 .btn {
-  display: inline-flex; align-items: center; justify-content: center; gap: 7px; height: 34px; padding: 0 14px;
-  border: 1px solid var(--line-strong); border-radius: 7px; background: transparent; cursor: pointer; white-space: nowrap;
-  font: 500 12.5px/1 var(--font-code);
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.4375rem; height: 2.125rem; padding: 0 0.875rem;
+  border: 1px solid var(--line-strong); border-radius: 0.4375rem; background: transparent; cursor: pointer; white-space: nowrap;
+  font: 500 0.7812rem/1 var(--font-mono);
 }
 .btn:hover { border-color: var(--muted); }
-.btn.square { width: 34px; padding: 0; }
+.btn.square { width: 2.125rem; padding: 0; }
+.btn.ghost { border-color: transparent; color: var(--muted); }
+.btn.ghost:hover { border-color: var(--line-strong); color: var(--ink); }
+/* Sidebar hidden with the toggle: the cards get the full width. */
+:root[data-side="hidden"] { --side: 0rem; }
+:root[data-side="hidden"] .side { display: none; }
 .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
 .btn.primary:hover { background: color-mix(in srgb, var(--accent) 88%, var(--ink)); }
 
 /* ---------- sidebar ---------- */
 .side {
-  grid-area: side; display: flex; flex-direction: column; gap: 18px; min-height: 0; overflow-y: auto;
-  padding: 14px 10px 18px; border-right: 1px solid var(--line);
+  grid-area: side; display: flex; flex-direction: column; min-height: 0; overflow: hidden;
+  border-right: 1px solid var(--line);
 }
-.tasks { display: flex; flex-direction: column; gap: 2px; margin: 0; padding: 0; list-style: none; }
+/* The task list scrolls; the description stays pinned at the bottom of the sidebar. */
+.tasks {
+  flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
+  display: flex; flex-direction: column; gap: 2px; margin: 0; padding: 0.875rem 0.625rem; list-style: none;
+}
 .task {
-  display: grid; gap: 2px; width: 100%; padding: 8px 10px; text-align: left; cursor: pointer;
-  border: 1px solid transparent; border-radius: 7px; background: transparent;
+  display: grid; gap: 2px; width: 100%; padding: 0.5rem 0.625rem; text-align: left; cursor: pointer;
+  border: 1px solid transparent; border-radius: 0.4375rem; background: transparent;
 }
-.task b { font: 500 12.5px/1.2 var(--font-code); }
-.task small { color: var(--muted); font-size: 11.5px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.task b { font: 500 0.7812rem/1.2 var(--font-mono); }
 .task:hover { background: color-mix(in srgb, var(--surface) 70%, transparent); }
 .task[aria-pressed="true"] { background: var(--surface); border-color: var(--line-strong); }
-.about { display: grid; gap: 8px; padding: 0 10px; color: var(--muted); font-size: 12.5px; }
+.about { flex: none; display: grid; gap: 0.5rem; padding: 0.875rem 1.25rem 1.125rem; border-top: 1px solid var(--line); color: var(--muted); font-size: 0.7812rem; }
 .about p { margin: 0; color: var(--ink); text-wrap: pretty; }
 .about a { text-decoration: none; }
-.about a:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+.about a:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 0.1875rem; }
 .about .nowrap { white-space: nowrap; }
-.about svg.i { width: 11px; height: 11px; vertical-align: -1px; margin-left: 2px; }
+.about svg.i { width: 0.6875rem; height: 0.6875rem; vertical-align: -1px; margin-left: 2px; }
 
 /* ---------- lane + code cards ---------- */
 .lane {
   grid-area: lane; position: relative; /* keeps visually hidden labels inside the scroller */
-  min-height: 0; display: flex; align-items: stretch; gap: 12px;
-  overflow-x: auto; overflow-y: hidden; padding: 16px var(--gutter);
+  min-height: 0; display: flex; align-items: stretch; gap: 0.75rem;
+  overflow-x: auto; overflow-y: hidden; padding: 1rem var(--gutter);
   scroll-padding-inline: var(--gutter); overscroll-behavior-x: contain;
 }
-.lane:focus-visible { outline-offset: -4px; }
+.lane:focus-visible { outline-offset: -0.25rem; }
 .panel {
   --pbg: #ffffff; --pfg: #1f2328;
   --pmuted: color-mix(in srgb, var(--pfg) 70%, var(--pbg));
@@ -130,49 +142,53 @@ svg.i { width: 15px; height: 15px; flex: none; fill: none; stroke: currentColor;
   --phover: color-mix(in srgb, var(--pfg) 8%, var(--pbg));
   position: relative;
   /* Sized to the code: --w is the widest line in characters, not counting comments (they wrap).
-     6.7ch = line numbers + a little slack; 18px = right padding + borders. Font is set here so 1ch is the code font's. */
-  font: 400 13px/1.62 var(--font-code);
+     6.7ch = line numbers + a little slack; 1.125rem = right padding + borders (1px each). Font is set here so 1ch is the code font's. */
+  font: 400 0.8125rem/1.62 var(--font-code);
   flex: 0 0 auto;
-  width: calc((var(--w, 40) + 6.7) * 1ch + 18px + var(--sbw, 0px));
+  width: calc((var(--w, 40) + 6.7) * 1ch + 1.125rem + var(--sbw, 0px));
   min-width: var(--col-min); max-width: var(--col-max);
   display: flex; flex-direction: column;
+  container: card / inline-size;
   background: var(--pbg); color: var(--pfg);
   border: 1px solid color-mix(in srgb, var(--pfg) 12%, var(--line)); border-radius: var(--radius);
   overflow: hidden;
 }
 .p-head, .p-sol, .p-foot, .empty { font-family: var(--font-sans); line-height: 1.45; }
-.p-head { display: flex; align-items: center; gap: 2px; padding: 6px 6px 6px 4px; border-bottom: 1px solid var(--pline); }
+.p-head { display: flex; align-items: center; gap: 2px; padding: 0.375rem 0.375rem 0.375rem 0.25rem; border-bottom: 1px solid var(--pline); }
 .p-lang {
-  display: inline-flex; align-items: center; gap: 6px; min-width: 0; height: 32px; padding: 0 8px 0 10px;
-  border: 0; border-radius: 6px; background: transparent; cursor: pointer; font: 600 14.5px/1 var(--font-sans); letter-spacing: -0.01em;
+  display: inline-flex; align-items: center; gap: 0.375rem; min-width: 0; height: 2rem; padding: 0 0.5rem 0 0.625rem;
+  border: 0; border-radius: 0.375rem; background: transparent; cursor: pointer; font: 600 0.9062rem/1 var(--font-sans); letter-spacing: -0.01em;
 }
 .p-lang span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.p-lang { flex-shrink: 0; max-width: 50%; } /* the version picker gives way first */
 .p-lang svg.i { color: var(--pmuted); }
 .p-lang:hover, .icon:hover { background: var(--phover); }
 .p-head .spacer { flex: 1; }
 .icon {
-  display: inline-grid; place-items: center; width: 32px; height: 32px; flex: none;
-  border: 0; border-radius: 6px; background: transparent; color: var(--pmuted); cursor: pointer;
+  display: inline-grid; place-items: center; width: 2rem; height: 2rem; flex: none;
+  border: 0; border-radius: 0.375rem; background: transparent; color: var(--pmuted); cursor: pointer;
 }
 .icon:hover { color: var(--pfg); }
-.p-sol { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-bottom: 1px solid var(--pline); font-size: 12px; color: var(--pmuted); }
+.p-sol { display: flex; align-items: center; gap: 0.5rem; flex: 0 1 auto; min-width: 0; margin-left: 0.25rem; font-size: 0.75rem; color: var(--pmuted); }
 .p-sol select {
-  flex: 1; min-width: 0; height: 28px; padding: 0 26px 0 8px; border: 1px solid var(--pline); border-radius: 6px;
-  background-color: var(--pbg); color: var(--pfg); appearance: none; cursor: pointer; font: 500 12px/1 var(--font-code);
+  flex: 1; min-width: 0; max-width: 15rem; height: 1.75rem; padding: 0 1.625rem 0 0.5rem; border: 1px solid var(--pline); border-radius: 0.375rem;
+  background-color: var(--pbg); color: var(--pfg); appearance: none; cursor: pointer; font: 500 0.75rem/1 var(--font-mono);
   background-image: linear-gradient(45deg, transparent 50%, currentColor 50%), linear-gradient(135deg, currentColor 50%, transparent 50%);
-  background-position: calc(100% - 13px) 12px, calc(100% - 9px) 12px; background-size: 4px 4px; background-repeat: no-repeat;
+  background-position: calc(100% - 0.8125rem) 0.75rem, calc(100% - 0.5625rem) 0.75rem; background-size: 0.25rem 0.25rem; background-repeat: no-repeat;
 }
 .p-sol .count { font-variant-numeric: tabular-nums; white-space: nowrap; }
+@container card (max-width: 23rem) { .p-sol .count { display: none; } }
 .p-code { flex: 1; min-height: 0; overflow: auto; scrollbar-gutter: stable; }
 .p-code .shiki {
-  margin: 0; padding: 12px 16px 16px 0; min-height: 100%; white-space: pre;
+  margin: 0; padding: 0.75rem 1rem 1rem 0; min-height: 100%; white-space: pre;
   /* The code keeps its full width even when the card is capped, so comments wrap at the code's width
      and the whole block scrolls sideways as one shape. */
-  width: calc((var(--w, 40) + 6.7) * 1ch + 16px); min-width: 100%;
+  width: calc((var(--w, 40) + 6.7) * 1ch + 1rem); min-width: 100%;
   background: transparent !important; color: var(--pfg); font: inherit; font-variant-ligatures: none; tab-size: 4;
   counter-reset: ln;
 }
-.p-code .shiki:focus-visible { outline-offset: -2px; border-radius: 4px; }
+.p-code .shiki:focus-visible { outline-offset: -2px; border-radius: 0.25rem; }
+.p-code code { font: inherit; } /* browsers give <code> their own monospace font; use the picked one */
 /* Each line hangs: wrapped comment rows continue under the line's own indentation, clear of the number. */
 .p-code .line {
   display: block; min-height: 1.62em; counter-increment: ln;
@@ -182,112 +198,123 @@ svg.i { width: 15px; height: 15px; flex: none; fill: none; stroke: currentColor;
   content: counter(ln); display: inline-block; width: 4.2ch; padding-right: 1.6ch; margin-right: 0.4ch; text-indent: 0;
   text-align: right; color: var(--pfaint); user-select: none; font-variant-numeric: tabular-nums;
 }
-.p-code .cm { white-space: pre-wrap; overflow-wrap: anywhere; }
+.p-code .cm, .p-code .plain .line { white-space: pre-wrap; overflow-wrap: anywhere; }
 .p-foot {
-  display: flex; align-items: center; gap: 4px 12px; flex-wrap: wrap; padding: 8px 12px;
-  border-top: 1px solid var(--pline); color: var(--pmuted); font-size: 11.5px; font-variant-numeric: tabular-nums;
+  display: flex; align-items: center; gap: 0.25rem 0.75rem; flex-wrap: wrap; padding: 0.5rem 0.75rem;
+  border-top: 1px solid var(--pline); color: var(--pmuted); font-size: 0.7188rem; font-variant-numeric: tabular-nums;
 }
 .p-foot .note { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.p-foot a { margin-left: auto; display: inline-flex; align-items: center; gap: 4px; text-decoration: none; white-space: nowrap; }
-.p-foot a:hover { color: var(--pfg); text-decoration: underline; text-underline-offset: 3px; }
-.p-foot svg.i { width: 11px; height: 11px; }
-.empty { flex: 1; display: grid; place-content: center; gap: 14px; padding: 24px; text-align: center; color: var(--pmuted); }
+.p-foot a { margin-left: auto; display: inline-flex; align-items: center; gap: 0.25rem; text-decoration: none; white-space: nowrap; }
+.p-foot a:hover { color: var(--pfg); text-decoration: underline; text-underline-offset: 0.1875rem; }
+.p-foot svg.i { width: 0.6875rem; height: 0.6875rem; }
+.empty { flex: 1; display: grid; place-content: center; gap: 0.875rem; padding: 1.5rem; text-align: center; color: var(--pmuted); }
 .empty p { margin: 0; max-width: 30ch; }
 .empty strong { color: var(--pfg); }
 .empty button {
-  justify-self: center; height: 34px; padding: 0 14px; border-radius: 7px; cursor: pointer;
-  border: 1px solid var(--pline); background: var(--phover); color: var(--pfg); font: 500 12.5px/1 var(--font-code);
+  justify-self: center; height: 2.125rem; padding: 0 0.875rem; border-radius: 0.4375rem; cursor: pointer;
+  border: 1px solid var(--pline); background: var(--phover); color: var(--pfg); font: 500 0.7812rem/1 var(--font-mono);
 }
 .loading .p-code, .lane.is-loading .panel { opacity: 0.55; transition: opacity 0.15s; }
 .add {
-  flex: 0 0 12rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+  flex: 0 0 12rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem;
   border: 1px dashed var(--line-strong); border-radius: var(--radius); background: transparent; color: var(--muted); cursor: pointer;
 }
 .add:hover { border-color: var(--accent); color: var(--ink); }
-.add .plus { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--line-strong); color: var(--accent); }
-.add b { font: 500 12.5px/1.2 var(--font-code); color: var(--ink); }
-.add small { font-size: 11.5px; font-variant-numeric: tabular-nums; }
+.add .plus { display: grid; place-items: center; width: 2.25rem; height: 2.25rem; border-radius: 50%; border: 1px solid var(--line-strong); color: var(--accent); }
+.add b { font: 500 0.7812rem/1.2 var(--font-mono); color: var(--ink); }
+.add small { font-size: 0.7188rem; font-variant-numeric: tabular-nums; }
 .lane.is-empty .add { flex-basis: min(22rem, var(--col-max)); }
 
 /* ---------- language picker ---------- */
 dialog.picker {
   width: min(34rem, calc(100vw - 2 * var(--gutter))); max-height: min(38rem, calc(100% - 6rem));
-  margin: 8vh auto auto; padding: 0; border: 1px solid var(--line-strong); border-radius: 10px;
-  background: var(--surface); color: var(--ink); box-shadow: 0 24px 64px rgb(0 0 0 / 0.28); overflow: hidden;
+  margin: 8vh auto auto; padding: 0; border: 1px solid var(--line-strong); border-radius: 0.625rem;
+  background: var(--surface); color: var(--ink); box-shadow: 0 1.5rem 4rem rgb(0 0 0 / 0.28); overflow: hidden;
 }
 dialog.picker[open] { display: flex; flex-direction: column; }
 dialog.picker::backdrop { background: rgb(8 8 10 / 0.5); }
-.pk-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 16px 18px 10px; }
-.pk-head h2 { margin: 0; font: 600 17px/1.2 var(--font-sans); letter-spacing: -0.01em; }
-.pk-head span { color: var(--muted); font-size: 12.5px; font-variant-numeric: tabular-nums; }
-.pk-search { position: relative; margin: 0 14px 8px; }
-.pk-search svg.i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--muted); }
-.pk-search input { width: 100%; height: 40px; padding: 0 12px 0 36px; border: 1px solid var(--line-strong); border-radius: 7px; background: var(--bg); font-size: 14.5px; }
+.pk-head { display: flex; align-items: baseline; justify-content: space-between; gap: 0.75rem; padding: 1rem 1.125rem 0.625rem; }
+.pk-head h2 { margin: 0; font: 600 1.0625rem/1.2 var(--font-sans); letter-spacing: -0.01em; }
+.pk-head span { color: var(--muted); font-size: 0.7812rem; font-variant-numeric: tabular-nums; }
+.pk-search { position: relative; margin: 0 0.875rem 0.5rem; }
+.pk-search svg.i { position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--muted); }
+.pk-search input { width: 100%; height: 2.5rem; padding: 0 0.75rem 0 2.25rem; border: 1px solid var(--line-strong); border-radius: 0.4375rem; background: var(--bg); font-size: 0.9062rem; }
 .pk-search input:focus { outline: 2px solid var(--accent); outline-offset: -1px; border-color: transparent; }
-.pk-list { flex: 1; min-height: 0; overflow-y: auto; padding: 0 8px 8px; overscroll-behavior: contain; }
-.pk-group { margin: 10px 10px 4px; font-size: 11.5px; font-weight: 600; color: var(--muted); }
-.pk-opt { display: flex; align-items: center; gap: 8px; min-height: 36px; padding: 6px 10px; border-radius: 6px; cursor: pointer; }
+.pk-list { flex: 1; min-height: 0; overflow-y: auto; padding: 0 0.5rem 0.5rem; overscroll-behavior: contain; }
+.pk-group { margin: 0.625rem 0.625rem 0.25rem; font-size: 0.7188rem; font-weight: 600; color: var(--muted); }
+.pk-opt { display: flex; align-items: center; gap: 0.5rem; min-height: 2.25rem; padding: 0.375rem 0.625rem; border-radius: 0.375rem; cursor: pointer; }
 .pk-opt .nm { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
-.pk-opt .meta { color: var(--muted); font-size: 12px; white-space: nowrap; font-variant-numeric: tabular-nums; }
-.pk-opt .tag { font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 99px; background: var(--accent-soft); color: var(--ink); white-space: nowrap; }
+.pk-opt .meta { color: var(--muted); font-size: 0.75rem; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.pk-opt .tag { font-size: 0.6875rem; font-weight: 600; padding: 2px 0.4375rem; border-radius: 6.1875rem; background: var(--accent-soft); color: var(--ink); white-space: nowrap; }
 .pk-opt[aria-selected="true"] { background: var(--accent); color: var(--accent-ink); }
 .pk-opt[aria-selected="true"] .meta { color: inherit; opacity: 0.85; }
 .pk-opt[aria-selected="true"] .tag { background: color-mix(in srgb, var(--accent-ink) 22%, transparent); color: inherit; }
-.pk-none { padding: 28px 12px; text-align: center; color: var(--muted); }
-.pk-foot { display: flex; gap: 16px; padding: 10px 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; }
-.pk-foot kbd { font: 500 11px/1 var(--font-code); padding: 2px 5px; border: 1px solid var(--line-strong); border-radius: 4px; background: var(--bg); }
+.pk-none { padding: 1.75rem 0.75rem; text-align: center; color: var(--muted); }
+.pk-foot { display: flex; gap: 1rem; padding: 0.625rem 1.125rem; border-top: 1px solid var(--line); color: var(--muted); font-size: 0.75rem; }
+.pk-foot kbd { font: 500 0.6875rem/1 var(--font-mono); padding: 2px 0.3125rem; border: 1px solid var(--line-strong); border-radius: 0.25rem; background: var(--bg); }
 
 /* ---------- card menu + toast ---------- */
 .menu {
-  position: fixed; inset: auto; margin: 0; min-width: 12rem; padding: 6px;
-  border: 1px solid var(--line-strong); border-radius: 8px; background: var(--surface); color: var(--ink);
-  box-shadow: 0 8px 24px rgb(0 0 0 / 0.12);
+  position: fixed; inset: auto; margin: 0; min-width: 12rem; padding: 0.375rem;
+  border: 1px solid var(--line-strong); border-radius: 0.5rem; background: var(--surface); color: var(--ink);
+  box-shadow: 0 0.5rem 1.5rem rgb(0 0 0 / 0.12);
 }
 .menu button, .menu a {
-  display: flex; align-items: center; gap: 10px; width: 100%; height: 34px; padding: 0 10px; border: 0; border-radius: 5px;
-  background: transparent; text-align: left; text-decoration: none; cursor: pointer; font-size: 13px;
+  display: flex; align-items: center; gap: 0.625rem; width: 100%; height: 2.125rem; padding: 0 0.625rem; border: 0; border-radius: 0.3125rem;
+  background: transparent; text-align: left; text-decoration: none; cursor: pointer; font-size: 0.8125rem;
 }
 .menu button:hover, .menu a:hover, .menu button:focus-visible, .menu a:focus-visible { background: var(--accent-soft); outline: none; }
 .menu button:disabled { opacity: 0.4; cursor: default; background: transparent; }
-.menu hr { border: 0; border-top: 1px solid var(--line); margin: 5px 4px; }
+.menu hr { border: 0; border-top: 1px solid var(--line); margin: 0.3125rem 0.25rem; }
 .toast {
-  position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%);
-  padding: 9px 14px; border-radius: 7px; background: var(--ink); color: var(--bg); font-size: 13px; font-weight: 500;
+  position: fixed; left: 50%; bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%);
+  padding: 0.5625rem 0.875rem; border-radius: 0.4375rem; background: var(--ink); color: var(--bg); font-size: 0.8125rem; font-weight: 500;
   pointer-events: none; transition: opacity 0.18s;
 }
 .toast:empty { opacity: 0; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 
+/* ---------- narrower screens: pickers get their own row ---------- */
+@media (max-width: 1180px) {
+  .pickers { order: 3; flex: 1 1 100%; min-width: 0; }
+  .pickers .field { flex: 0 1 16rem; min-width: 0; }
+  .pickers .field select { flex: 1; width: auto; min-width: 0; }
+}
+
 /* ---------- phones ---------- */
 @media (max-width: 720px) {
-  :root { --col-max: calc(100vw - 2 * var(--gutter) - 28px); --col-min: min(19rem, var(--col-max)); }
+  :root { --col-max: calc(100vw - 2 * var(--gutter) - 1.75rem); --col-min: min(19rem, var(--col-max)); }
   .app { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto minmax(0, 1fr); grid-template-areas: "nav" "side" "lane"; }
-  .nav { padding: 12px var(--gutter) 10px; }
-  .brand { flex-basis: 100%; }
-  .controls { flex: 1; }
-  .controls .field { flex: 1; min-width: 0; }
-  .controls .field select { flex: 1; min-width: 0; }
+  .nav { padding: 0.75rem var(--gutter) 0.625rem; }
+  .pickers .field { flex: 1 1 0; }
   .field-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
-  .side { overflow: visible; gap: 6px; padding: 10px 0; border-right: 0; border-bottom: 1px solid var(--line); }
+  .side { overflow: visible; gap: 0.375rem; padding: 0.625rem 0; border-right: 0; border-bottom: 1px solid var(--line); }
   .tasks {
-    flex-direction: row; overflow-x: auto; scrollbar-width: none; padding: 0 28px 0 var(--gutter);
-    mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
+    flex-direction: row; overflow-x: auto; scrollbar-width: none; padding: 0 1.75rem 0 var(--gutter);
+    mask-image: linear-gradient(to right, #000 calc(100% - 1.75rem), transparent);
   }
   .tasks::-webkit-scrollbar { display: none; }
   .tasks li { flex: none; }
   .task { width: auto; }
-  .about { padding: 0 var(--gutter); gap: 2px; }
+  .tasks { flex: none; overflow-y: hidden; }
+  .about { padding: 0 var(--gutter); gap: 2px; border-top: 0; }
   .lane { scroll-snap-type: x proximity; }
   .panel, .add { scroll-snap-align: start; }
   .add-long { display: none; }
 }
+@media (max-width: 359px) {
+  .nav { gap: 0.5rem; }
+  .brand { font-size: 1rem; }
+  .add-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  #addTop { width: 2.75rem; padding: 0; }
+}
 @media (pointer: coarse) {
-  .icon, .p-lang { height: 44px; }
-  .icon { width: 44px; }
-  .btn, .field { height: 44px; }
-  .btn.square { width: 44px; }
-  .p-sol select { height: 38px; }
-  .pk-opt { min-height: 44px; }
+  .icon, .p-lang { height: 2.75rem; }
+  .icon { width: 2.75rem; }
+  .btn, .field { height: 2.75rem; }
+  .btn.square { width: 2.75rem; }
+  .p-sol select { height: 2.375rem; }
+  .pk-opt { min-height: 2.75rem; }
   .pk-foot { display: none; }
 }
 </style>
@@ -295,21 +322,30 @@ dialog.picker::backdrop { background: rgb(8 8 10 / 0.5); }
 <body>
 <div class="app">
   <header class="nav">
+    <button class="btn square ghost" id="sideToggle" type="button" aria-controls="side" aria-expanded="true" aria-label="Hide tasks" title="Hide tasks">
+      <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/></svg>
+    </button>
     <h1 class="brand">Syntax <em>side by side</em></h1>
-    <div class="controls">
+    <div class="pickers">
       <label class="field" for="theme">
         <span class="field-label">Theme</span>
         <select id="theme"></select>
       </label>
+      <label class="field" for="font">
+        <span class="field-label">Font</span>
+        <select id="font"></select>
+      </label>
+    </div>
+    <div class="actions">
       <button class="btn square" id="mode" type="button" aria-label="Switch to dark theme" title="Switch to dark theme"></button>
       <button class="btn primary" id="addTop" type="button" aria-label="Add language">
         <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
-        <span>Add<span class="add-long"> language</span></span>
+        <span class="add-label">Add<span class="add-long"> language</span></span>
       </button>
     </div>
   </header>
 
-  <nav class="side" aria-label="Tasks">
+  <nav class="side" id="side" aria-label="Tasks">
     <ul class="tasks" id="tasks"></ul>
     <div class="about" id="about"></div>
   </nav>
@@ -357,20 +393,65 @@ const SHIKI_URL = 'https://cdn.jsdelivr.net/npm/shiki@4.4.3/+esm';
 const STORE = 'syntax-side-by-side:v1';
 const UI_KEY = 'syntax-side-by-side:ui';
 
-// The five most-installed VS Code colour themes. GitHub and Ayu follow the page's light/dark setting.
+// The 20 most-installed VS Code colour themes (Marketplace installs plus VS Code's built-in defaults),
+// limited to themes Shiki ships. Listed by popularity within each group.
 const THEMES = [
-  { id: 'github', name: 'GitHub', light: 'github-light-default', dark: 'github-dark-default' },
-  { id: 'one-dark-pro', name: 'One Dark Pro', light: 'one-dark-pro', dark: 'one-dark-pro' },
-  { id: 'dracula', name: 'Dracula', light: 'dracula', dark: 'dracula' },
-  { id: 'ayu', name: 'Ayu', light: 'ayu-light', dark: 'ayu-dark' },
-  { id: 'monokai', name: 'Monokai', light: 'monokai', dark: 'monokai' },
+  { id: 'github-light-default', name: 'GitHub Light', type: 'light' },
+  { id: 'light-plus', name: 'VS Code Light+', type: 'light' },
+  { id: 'ayu-light', name: 'Ayu Light', type: 'light' },
+  { id: 'night-owl-light', name: 'Night Owl Light', type: 'light' },
+  { id: 'one-light', name: 'One Light', type: 'light' },
+  { id: 'catppuccin-latte', name: 'Catppuccin Latte', type: 'light' },
+  { id: 'github-dark-default', name: 'GitHub Dark', type: 'dark' },
+  { id: 'dark-plus', name: 'VS Code Dark+', type: 'dark' },
+  { id: 'one-dark-pro', name: 'One Dark Pro', type: 'dark' },
+  { id: 'dracula', name: 'Dracula', type: 'dark' },
+  { id: 'material-theme', name: 'Material Theme', type: 'dark' },
+  { id: 'ayu-dark', name: 'Ayu Dark', type: 'dark' },
+  { id: 'monokai', name: 'Monokai', type: 'dark' },
+  { id: 'night-owl', name: 'Night Owl', type: 'dark' },
+  { id: 'tokyo-night', name: 'Tokyo Night', type: 'dark' },
+  { id: 'material-theme-palenight', name: 'Palenight', type: 'dark' },
+  { id: 'synthwave-84', name: "SynthWave '84", type: 'dark' },
+  { id: 'andromeeda', name: 'Andromeda', type: 'dark' },
+  { id: 'catppuccin-mocha', name: 'Catppuccin Mocha', type: 'dark' },
+  { id: 'nord', name: 'Nord', type: 'dark' },
 ];
+// Until the viewer picks a theme, the code follows the page: GitHub Light or GitHub Dark.
+const DEFAULT_THEME = { light: 'github-light-default', dark: 'github-dark-default' };
 // Editor colours, so cards paint correctly before the highlighter has loaded.
 const THEME_COLORS = {
-  'github-light-default': ['#ffffff', '#1f2328', 'light'], 'github-dark-default': ['#0d1117', '#e6edf3', 'dark'],
-  'one-dark-pro': ['#282c34', '#abb2bf', 'dark'], dracula: ['#282a36', '#f8f8f2', 'dark'],
-  'ayu-light': ['#f8f9fa', '#5c6166', 'light'], 'ayu-dark': ['#0d1017', '#bfbdb6', 'dark'], monokai: ['#272822', '#f8f8f2', 'dark'],
+  'github-light-default': ['#ffffff', '#1f2328'], 'light-plus': ['#ffffff', '#000000'], 'ayu-light': ['#f8f9fa', '#5c6166'],
+  'night-owl-light': ['#fbfbfb', '#403f53'], 'one-light': ['#fafafa', '#383a42'], 'catppuccin-latte': ['#eff1f5', '#4c4f69'],
+  'github-dark-default': ['#0d1117', '#e6edf3'], 'dark-plus': ['#1e1e1e', '#d4d4d4'], 'one-dark-pro': ['#282c34', '#abb2bf'],
+  dracula: ['#282a36', '#f8f8f2'], 'material-theme': ['#263238', '#eeffff'], 'ayu-dark': ['#0d1017', '#bfbdb6'],
+  monokai: ['#272822', '#f8f8f2'], 'night-owl': ['#011627', '#d6deeb'], 'tokyo-night': ['#1a1b26', '#a9b1d6'],
+  'material-theme-palenight': ['#292d3e', '#babed8'], 'synthwave-84': ['#262335', '#bbbbbb'], andromeeda: ['#23262e', '#d5ced9'],
+  'catppuccin-mocha': ['#1e1e2e', '#cdd6f4'], nord: ['#2e3440', '#d8dee9'],
 };
+// 20 popular coding fonts, all served by Google Fonts. `spec` asks for regular, bold and italic where the font has them.
+const FONTS = [
+  { name: 'JetBrains Mono', spec: 'ital,wght@0,400;0,700;1,400' },
+  { name: 'Fira Code', spec: 'wght@400;700' },
+  { name: 'Cascadia Code', spec: 'ital,wght@0,400;0,700;1,400' },
+  { name: 'Source Code Pro', spec: 'ital,wght@0,400;0,700;1,400' },
+  { name: 'Roboto Mono', spec: 'ital,wght@0,400;0,700;1,400' },
+  { name: 'IBM Plex Mono', spec: 'ital,wght@0,400;0,700;1,400' },
+  { name: 'Ubuntu Mono', spec: 'ital,wght@0,400;0,700;1,400' },
+  { name: 'Inconsolata', spec: 'wght@400;700' },
+  { name: 'Geist Mono', spec: 'ital,wght@0,400;0,700;1,400' },
+  { name: 'Victor Mono', spec: 'ital,wght@0,400;0,700;1,400' },
+  { name: 'Iosevka Charon Mono', spec: 'ital,wght@0,400;0,700;1,400' },
+  { name: 'Fira Mono', spec: 'wght@400;700' },
+  { name: 'Space Mono', spec: 'ital,wght@0,400;0,700;1,400' },
+  { name: 'Red Hat Mono', spec: 'ital,wght@0,400;0,700;1,400' },
+  { name: 'DM Mono', spec: 'ital,wght@0,400;0,500;1,400' },
+  { name: 'Anonymous Pro', spec: 'ital,wght@0,400;0,700;1,400' },
+  { name: 'Cousine', spec: 'ital,wght@0,400;0,700;1,400' },
+  { name: 'Courier Prime', spec: 'ital,wght@0,400;0,700;1,400' },
+  { name: 'Atkinson Hyperlegible Mono', spec: 'ital,wght@0,400;0,700;1,400' },
+  { name: 'Google Sans Code', spec: 'ital,wght@0,400;0,700;1,400' },
+];
 const POPULAR = ['Python', 'JavaScript', 'TypeScript', 'Java', 'C#', 'C++', 'C', 'Go', 'Rust', 'Kotlin', 'Swift', 'Ruby',
   'PHP', 'Dart', 'Scala', 'Elixir', 'Haskell', 'Lua', 'Julia', 'Zig', 'OCaml', 'F#', 'Clojure', 'Gleam', 'Nim', 'Erlang', 'R', 'Perl'];
 const DEFAULT_PANELS = ['javascript', 'python', 'go', 'rust'];
@@ -404,13 +485,18 @@ const ICON = {
 
 // ---------- state ----------
 let nextId = 1;
-const state = { task: 'fizzbuzz', theme: 'github', panels: [] };
+const state = { task: 'fizzbuzz', theme: null, font: FONTS[0].name, sideOpen: true, panels: [] };
 let hasSaved = false;
 try {
   const saved = JSON.parse(localStorage.getItem(STORE) || 'null');
   if (saved) {
     hasSaved = true;
-    Object.assign(state, { task: saved.task || state.task, theme: saved.theme || state.theme });
+    Object.assign(state, {
+      task: saved.task || state.task,
+      theme: THEME_COLORS[saved.theme] ? saved.theme : null, // older saves used ids like "github" that now mean "follow the page"
+      font: FONTS.some((f) => f.name === saved.font) ? saved.font : state.font,
+      sideOpen: saved.side !== false,
+    });
     state.panels = (saved.panels || []).map((p) => ({ id: nextId++, key: p.key, sol: Number.isInteger(p.sol) ? p.sol : null }));
   }
   const ui = localStorage.getItem(UI_KEY);
@@ -419,7 +505,7 @@ try {
 if (!hasSaved) state.panels = DEFAULT_PANELS.map((key) => ({ id: nextId++, key, sol: null }));
 function save() {
   try {
-    localStorage.setItem(STORE, JSON.stringify({ task: state.task, theme: state.theme,
+    localStorage.setItem(STORE, JSON.stringify({ task: state.task, theme: state.theme, font: state.font, side: state.sideOpen,
       panels: state.panels.map(({ key, sol }) => ({ key, sol })) }));
   } catch {}
 }
@@ -466,36 +552,40 @@ function highlighter() {
 }
 const once = (map, key, fn) => { if (!map.has(key)) map.set(key, fn().then(() => true, () => false)); return map.get(key); };
 function shikiTheme() {
-  const t = THEMES.find((x) => x.id === state.theme) || THEMES[0];
-  return pageIsDark() ? t.dark : t.light;
+  return state.theme || (pageIsDark() ? DEFAULT_THEME.dark : DEFAULT_THEME.light);
 }
 
 // Lines are blocks with their indentation in --ind, so wrapped comment rows can hang under it.
 const indentOf = (text) => text.match(/^ */)[0].length;
 const lineHtml = (text, inner) => `<span class="line" style="--ind:${indentOf(text)}ch">${inner}</span>`;
-const preHtml = (lines) => `<pre class="shiki" tabindex="0"><code>${lines.join('')}</code></pre>`;
+const preHtml = (lines, cls = '') => `<pre class="shiki${cls}" tabindex="0"><code>${lines.join('')}</code></pre>`;
+// Before highlighting arrives (or with no highlighter), lines may wrap: the card already fits the widest
+// code line, so anything longer is a comment.
 function plainHtml(code) {
-  return preHtml(code.split('\n').map((l) => lineHtml(l, esc(l))));
+  return preHtml(code.split('\n').map((l) => lineHtml(l, esc(l))), ' plain');
 }
 // Shiki tokens to HTML. Comment pieces get .cm, which wraps; everything else keeps its exact shape.
 function tokensHtml(lines) {
   return preHtml(lines.map((tokens) => {
-    let text = '', inner = '';
+    // Split tokens by scope so a token that mixes code and comment (rare) is classified piece by piece.
+    const pieces = [];
     for (const t of tokens) {
       const style = `color:${t.color}${t.fontStyle & 1 ? ';font-style:italic' : ''}${t.fontStyle & 2 ? ';font-weight:600' : ''}${t.fontStyle & 4 ? ';text-decoration:underline' : ''}`;
-      // Split by scope so a token that mixes code and comment (rare) is classified piece by piece.
-      let run = '', runIsComment = null;
-      const flush = () => { if (run) inner += `<span${runIsComment ? ' class="cm"' : ''} style="${style}">${esc(run)}</span>`; run = ''; };
       for (const piece of t.explanation?.length ? t.explanation : [{ content: t.content, scopes: [] }]) {
-        const isComment = piece.scopes.some((sc) => sc.scopeName.startsWith('comment'));
-        if (runIsComment !== null && isComment !== runIsComment) flush();
-        runIsComment = isComment;
-        run += piece.content;
+        pieces.push({ text: piece.content, style, cm: piece.scopes.some((sc) => sc.scopeName.startsWith('comment')) });
       }
-      flush();
-      text += t.content;
     }
-    return lineHtml(text, inner);
+    // Spaces right before a comment wrap along with it, so they never push the card wider than its code.
+    for (let i = pieces.length - 2; i >= 0; i--) if (pieces[i + 1].cm && !pieces[i].text.trim()) pieces[i].cm = true;
+    let inner = '', run = '', cur = null;
+    const flush = () => { if (run) inner += `<span${cur.cm ? ' class="cm"' : ''} style="${cur.style}">${esc(run)}</span>`; run = ''; };
+    for (const piece of pieces) {
+      if (cur && (piece.cm !== cur.cm || piece.style !== cur.style)) flush();
+      cur = piece;
+      run += piece.text;
+    }
+    if (cur) flush();
+    return lineHtml(pieces.map((x) => x.text).join(''), inner);
   }));
 }
 async function highlightInto(el, code, lang, cacheKey) {
@@ -517,37 +607,46 @@ async function highlightInto(el, code, lang, cacheKey) {
 const lane = $('#lane');
 const rosettaUrl = (page) => `https://rosettacode.org/wiki/${encodeURIComponent(page.replace(/ /g, '_')).replace(/%2F/g, '/')}`;
 function renderTasks() {
-  $('#tasks').innerHTML = index.tasks.map((t) => `
-    <li><button type="button" class="task" data-task="${t.id}" aria-pressed="${t.id === state.task}">
-      <b>${esc(t.title)}</b>
-      <small>${t.median === 1 ? '1 line' : `${t.median} lines`}</small>
-    </button></li>`).join('');
-  const tab = $('#tasks [aria-pressed="true"]');
-  // Only matters on phones, where the task list is a sideways row.
-  if (tab && $('#tasks').scrollWidth > $('#tasks').clientWidth) reveal($('#tasks'), tab, { pad: 28 });
+  // Fill the pinned description first: its height decides how much room the task list has.
   const t = index.tasks.find((x) => x.id === state.task);
   $('#about').innerHTML = `
     <p>${esc(t.blurb)}</p>
     <a href="${rosettaUrl(t.page)}" target="_blank" rel="noopener">Code from Rosetta Code <span class="nowrap">(GNU FDL 1.3)${ICON.ext}</span></a>`;
+  const list = $('#tasks');
+  const hadFocus = list.contains(document.activeElement);
+  list.innerHTML = index.tasks.map((task) => `
+    <li><button type="button" class="task" data-task="${task.id}" aria-pressed="${task.id === state.task}">
+      <b>${esc(task.title)}</b>
+    </button></li>`).join('');
+  const tab = list.querySelector('[aria-pressed="true"]');
+  if (tab) {
+    // Keep the chosen task in view: a sideways row on phones, a scrolling column elsewhere.
+    if (list.scrollWidth > list.clientWidth) reveal(list, tab, { pad: 28 });
+    else if (list.scrollHeight > list.clientHeight) reveal(list, tab, { axis: 'y', pad: 8 });
+    if (hadFocus) tab.focus({ preventScroll: true });
+  }
 }
 
 function themeVars() {
-  const [bg, fg, type] = THEME_COLORS[shikiTheme()];
-  return `--pbg:${bg};--pfg:${fg};color-scheme:${type}`;
+  const id = shikiTheme();
+  const [bg, fg] = THEME_COLORS[id];
+  return `--pbg:${bg};--pfg:${fg};color-scheme:${THEMES.find((t) => t.id === id).type}`;
 }
 
 function panelHtml(p) {
   const lang = current?.byKey.get(p.key);
   const label = lang?.name || nameFromKey(p.key);
-  const head = `
+  const header = (picker = '') => `
     <header class="p-head">
       <button type="button" class="p-lang" data-action="change" aria-haspopup="dialog" title="Change language">
         <span>${esc(label)}</span>${ICON.chev}<span class="sr-only">, change language</span>
       </button>
+      ${picker}
       <span class="spacer"></span>
       <button type="button" class="icon" data-action="menu" aria-haspopup="menu" aria-label="More actions for ${esc(label)}" title="More actions">${ICON.more}</button>
       <button type="button" class="icon" data-action="remove" aria-label="Remove ${esc(label)}" title="Remove card">${ICON.x}</button>
     </header>`;
+  const head = header();
   if (!current) {
     return `<section class="panel loading" data-id="${p.id}" style="${themeVars()};--w:0" aria-label="${esc(label)}">${head}<div class="p-code"></div></section>`;
   }
@@ -571,7 +670,7 @@ function panelHtml(p) {
       </select>
       <span class="count">${solIdx + 1} of ${lang.solutions.length}</span>
     </div>` : '';
-  return `<section class="panel" data-id="${p.id}" style="${themeVars()};--w:${sol.w}" aria-label="${esc(lang.name)}">${head}${solPicker}
+  return `<section class="panel" data-id="${p.id}" style="${themeVars()};--w:${sol.w}" aria-label="${esc(lang.name)}">${header(solPicker)}
     <div class="p-code" data-code></div>
     <footer class="p-foot">
       <span>${fmt(lines)} ${lines === 1 ? 'line' : 'lines'}</span>
@@ -853,17 +952,49 @@ $('#tasks').addEventListener('click', (e) => {
 });
 $('#addTop').addEventListener('click', (e) => openPicker({ type: 'add' }, e.currentTarget));
 const themeSel = $('#theme');
-themeSel.innerHTML = THEMES.map((t) => `<option value="${t.id}">${esc(t.name)}${t.light !== t.dark ? ' (auto)' : ''}</option>`).join('');
-themeSel.value = THEMES.some((t) => t.id === state.theme) ? state.theme : 'github';
+themeSel.innerHTML = [['light', 'Light'], ['dark', 'Dark']].map(([type, label]) => `<optgroup label="${label}">${
+  THEMES.filter((t) => t.type === type).map((t) => `<option value="${t.id}">${esc(t.name)}</option>`).join('')}</optgroup>`).join('');
+const syncThemeSelect = () => { themeSel.value = shikiTheme(); };
+syncThemeSelect();
 themeSel.addEventListener('change', () => { state.theme = themeSel.value; save(); renderLane(); });
+
+// Code font: load a font from Google Fonts the first time it's picked.
+const fontSel = $('#font');
+const loadedFonts = new Set([FONTS[0].name]); // already in the page's font link
+fontSel.innerHTML = FONTS.map((f) => `<option value="${esc(f.name)}">${esc(f.name)}</option>`).join('');
+function applyFont() {
+  const f = FONTS.find((x) => x.name === state.font) || FONTS[0];
+  if (!loadedFonts.has(f.name)) {
+    loadedFonts.add(f.name);
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = `https://fonts.googleapis.com/css2?family=${f.name.replace(/ /g, '+')}:${f.spec}&display=swap`;
+    document.head.append(link);
+  }
+  document.documentElement.style.setProperty('--font-code', `"${f.name}", ui-monospace, "SF Mono", Menlo, Consolas, monospace`);
+  fontSel.value = f.name;
+}
+applyFont();
+fontSel.addEventListener('change', () => { state.font = fontSel.value; save(); applyFont(); });
 modeBtn.addEventListener('click', () => {
   const next = pageIsDark() ? 'light' : 'dark';
   document.documentElement.dataset.ui = next;
   try { localStorage.setItem(UI_KEY, next); } catch {}
   paintModeButton();
+  syncThemeSelect();
   renderLane();
 });
 paintModeButton();
+const sideBtn = $('#sideToggle');
+function applySide() {
+  if (state.sideOpen) delete document.documentElement.dataset.side; else document.documentElement.dataset.side = 'hidden';
+  const label = state.sideOpen ? 'Hide tasks' : 'Show tasks';
+  sideBtn.setAttribute('aria-expanded', String(state.sideOpen));
+  sideBtn.setAttribute('aria-label', label);
+  sideBtn.title = label;
+}
+sideBtn.addEventListener('click', () => { state.sideOpen = !state.sideOpen; save(); applySide(); });
+applySide();
 // Classic (non-overlay) scrollbars take room inside a card; add it to the card width so code still fits.
 (() => {
   const probe = document.createElement('div');
@@ -873,7 +1004,7 @@ paintModeButton();
   probe.remove();
 })();
 // Follow the system or a host page switching light/dark, unless the viewer picked one here.
-const retheme = () => { paintModeButton(); if (index) renderLane(); };
+const retheme = () => { paintModeButton(); syncThemeSelect(); if (index) renderLane(); };
 darkMq.addEventListener('change', retheme);
 new MutationObserver(retheme).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
 
@@ -889,9 +1020,10 @@ new MutationObserver(retheme).observe(document.documentElement, { attributes: tr
   for (const [key, name] of Object.entries(index.names || {})) knownNames.set(key, name);
   if (!index.tasks.some((t) => t.id === state.task)) state.task = 'fizzbuzz';
   await setTask(state.task);
-  // Warm the other tasks so switching is instant.
-  const idle = window.requestIdleCallback || ((fn) => setTimeout(fn, 1200));
-  idle(() => index.tasks.forEach((t) => loadTask(t.id).catch(() => {})));
+  // Load a task's code as soon as the pointer or keyboard focus reaches it, so switching feels instant.
+  const prefetch = (e) => { const b = e.target.closest?.('[data-task]'); if (b) loadTask(b.dataset.task).catch(() => {}); };
+  $('#tasks').addEventListener('pointerover', prefetch);
+  $('#tasks').addEventListener('focusin', prefetch);
 })();
 </script>
 </body>

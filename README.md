@@ -2,19 +2,21 @@
 
 A web page for choosing your next programming language. It shows the same program in as many languages as you like, side by side, with syntax highlighting.
 
-- Five programs of different sizes, taken from [Rosetta Code](https://rosettacode.org): Hello world, FizzBuzz, Quicksort, Anagrams and Conway's Game of Life.
-- Every language Rosetta Code has for a program, from 140 for Anagrams to 624 for Hello world.
+- 25 programs from [Rosetta Code](https://rosettacode.org), listed from shortest to longest: from Hello world and string basics through classes, exceptions and sorting to N-queens and Conway's Game of Life.
+- Every language Rosetta Code has for a program, from 118 for Exceptions to 624 for Hello world.
 - Each card is as wide as its code. Comments wrap instead of widening the card.
-- Five code themes (GitHub, One Dark Pro, Dracula, Ayu, Monokai) and a light or dark page.
-- Remembers your languages, program and theme in the browser.
+- 20 code themes, split into light and dark: the most-installed VS Code themes plus VS Code's own Light+ and Dark+.
+- 20 coding fonts, such as JetBrains Mono, Fira Code, Cascadia Code and Source Code Pro.
+- A light or dark page. Until you pick a code theme, the code follows the page (GitHub Light or GitHub Dark).
+- Remembers your languages, program, theme and font in the browser.
 
 ## Run it locally
 
 ```bash
-npm start
+npm run dev
 ```
 
-Then open http://localhost:8080. This uses Python 3, which macOS already has; any static file server works too. Opening `index.html` straight from the Finder won't work, because browsers block pages opened from disk from loading the `data/` files.
+Then open http://localhost:8080. Stop it with Ctrl+C. This uses Python 3, which macOS already has; any static file server works too. Opening `index.html` straight from the Finder won't work, because browsers block pages opened from disk from loading the `data/` files.
 
 ## Update the code samples
 
@@ -44,7 +46,7 @@ Cloudflare Pages and Netlify also work: point them at the repository with no bui
 ## How it's built
 
 - `index.html` holds the whole page: layout, styles and script. There is no framework and no build step.
-- Highlighting is [Shiki](https://shiki.style), loaded from the jsDelivr CDN. Fonts come from Google Fonts.
+- Highlighting is [Shiki](https://shiki.style), loaded from the jsDelivr CDN. Fonts come from Google Fonts; a code font is only downloaded when you pick it.
 - `scripts/build-data.mjs` downloads the Rosetta Code pages (including subpages such as `FizzBuzz/Basic`), splits them into one entry per language, picks a highlighter grammar for each, and writes `data/*.json`.
 
 ## Credits

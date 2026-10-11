@@ -23,6 +23,26 @@ const TASKS = [
     blurb: 'Read a word list and find the largest sets of words that use the same letters, like “angel” and “glean”.' },
   { id: 'life', page: "Conway's Game of Life", title: 'Game of Life',
     blurb: 'Simulate a grid of cells where each cell lives or dies based on how many of its eight neighbours are alive.' },
+  { id: 'loops', page: 'Loops/For', title: 'Nested loops', blurb: 'Print a triangle of asterisks using one loop inside another.' },
+  { id: 'functions', page: 'Function definition', title: 'Function definition', blurb: 'Define a function that multiplies two numbers.' },
+  { id: 'reverse', page: 'Reverse a string', title: 'Reverse a string', blurb: 'Reverse the characters of a string.' },
+  { id: 'case', page: 'String case', title: 'String case', blurb: 'Convert a string to upper case and to lower case.' },
+  { id: 'factorial', page: 'Factorial', title: 'Factorial', blurb: 'Multiply all whole numbers from 1 up to n.' },
+  { id: 'fibonacci', page: 'Fibonacci sequence', title: 'Fibonacci', blurb: 'Compute the nth Fibonacci number, where each number is the sum of the two before it.' },
+  { id: 'filter', page: 'Filter', title: 'Filter', blurb: 'Pick the even numbers out of an array and put them in a new one.' },
+  { id: 'hof', page: 'Higher-order functions', title: 'Higher-order functions', blurb: 'Pass a function to another function as an argument.' },
+  { id: 'dict', page: 'Associative array/Iteration', title: 'Dictionary loop', blurb: 'Build a dictionary of keys and values, then loop over it.' },
+  { id: 'guess', page: 'Guess the number', title: 'Guess the number', blurb: 'Pick a random number from 1 to 10 and ask the player to guess until they get it right.' },
+  { id: 'doors', page: '100 doors', title: '100 doors', blurb: 'Toggle 100 doors in 100 passes and print which ones end up open.' },
+  { id: 'exceptions', page: 'Exceptions', title: 'Exceptions', blurb: 'Define your own error, throw it, and catch it.' },
+  { id: 'hanoi', page: 'Towers of Hanoi', title: 'Towers of Hanoi', blurb: 'Move a stack of disks between three pegs, one at a time, never putting a bigger disk on a smaller one.' },
+  { id: 'bsearch', page: 'Binary search', title: 'Binary search', blurb: 'Find a value in a sorted array by halving the range to search at each step.' },
+  { id: 'bubble', page: 'Sorting algorithms/Bubble sort', title: 'Bubble sort', blurb: 'Sort an array by repeatedly swapping neighbours that are in the wrong order.' },
+  { id: 'sieve', page: 'Sieve of Eratosthenes', title: 'Sieve of Eratosthenes', blurb: 'Find all prime numbers up to a limit by crossing out the multiples of each prime.' },
+  { id: 'classes', page: 'Classes', title: 'Classes', blurb: 'Define a class with a field, a constructor and a method, then create an object from it.' },
+  { id: 'readfile', page: 'Read a file line by line', title: 'Read a file', blurb: 'Open a text file and handle it one line at a time.' },
+  { id: 'caesar', page: 'Caesar cipher', title: 'Caesar cipher', blurb: 'Encode and decode a message by shifting each letter a fixed number of places in the alphabet.' },
+  { id: 'nqueens', page: 'N-queens problem', title: 'N-queens', blurb: 'Place N queens on an N×N chessboard so that no two can attack each other.' },
 ];
 
 // ---------- Shiki language resolution ----------
@@ -273,13 +293,25 @@ for (const task of TASKS) {
     });
     for (const sol of solutions) sol.w = await codeWidth(sol.code, sol.hl);
     // Default to the first solution that isn't an explicitly outdated dialect.
-    const def = Math.max(0, solutions.findIndex((s) => !/\b(python ?2|legacy|deprecated|obsolete)\b/i.test(s.title)));
+    // For Python, also skip Python 2 code whose title doesn't say so (print statements, old exception syntax).
+    const py2 = (code) => /^\s*print [^(=]|^\s*import exceptions|except \w+, *\w+:|raise \w+, /m.test(code);
+    const outdated = (s) => /\b(python ?2|legacy|deprecated|obsolete)\b/i.test(s.title) || (l.name === 'Python' && py2(s.code));
+    const lineCount = (s) => s.code.split('\n').length;
+    let def = Math.max(0, solutions.findIndex((s) => !outdated(s)));
+    if (def > 0 && l.name === 'Python') {
+      // The first version was Python 2: pick the modern version closest to it in length (likely the same program,
+      // updated), and keep the original if every modern version is much shorter, like a two-line stub.
+      const ref = lineCount(solutions[0]);
+      const best = solutions.map((sol, i) => ({ i, n: lineCount(sol) })).filter((c) => !outdated(solutions[c.i]))
+        .reduce((a, b) => (Math.abs(b.n - ref) < Math.abs(a.n - ref) ? b : a));
+      def = best.n >= ref * 0.5 ? best.i : 0;
+    }
     languages.push({ name: l.name, key: l.key, def, link: `https://rosettacode.org/wiki/${anchorOf(task.page)}#${anchorOf(l.anchor)}`, solutions });
   }
   languages.sort((a, b) => a.name.localeCompare(b.name, 'en', { sensitivity: 'base', numeric: true }));
   const firstLines = languages.map((l) => l.solutions[l.def].code.split('\n').length).sort((a, b) => a - b);
   const median = firstLines[Math.floor(firstLines.length / 2)];
-  const out = { id: task.id, title: task.title, page: task.page, blurb: task.blurb, median, languages };
+  const out = { id: task.id, title: task.title, page: task.page, blurb: task.blurb, languages };
   fs.writeFileSync(path.join(OUT_DIR, `${task.id}.json`), JSON.stringify(out));
   const highlighted = languages.filter((l) => l.solutions[l.def].hl).length;
   report[task.id] = { languages: languages.length, highlighted, median, kb: Math.round(JSON.stringify(out).length / 1024) };
@@ -293,7 +325,8 @@ for (const t of TASKS) for (const l of JSON.parse(fs.readFileSync(path.join(OUT_
   for (const s of l.solutions) if (s.hl) usedHl.add(s.hl);
 }
 fs.writeFileSync(path.join(OUT_DIR, 'index.json'), JSON.stringify({
-  tasks: TASKS.map(({ id, title, blurb, page }) => ({ id, title, blurb, page, languages: report[id].languages, median: report[id].median })),
+  tasks: [...TASKS].sort((a, b) => report[a.id].median - report[b.id].median || a.title.localeCompare(b.title))
+    .map(({ id, title, blurb, page }) => ({ id, title, blurb, page })),
   hlNames: Object.fromEntries([...usedHl].sort().map((id) => [id, nameOf[id]])),
   names,
 }));
