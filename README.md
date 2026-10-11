@@ -1,6 +1,6 @@
 # Syntax Side by Side
 
-A web page for choosing your next programming language. It shows the same program in as many languages as you like, side by side, with syntax highlighting.
+A web page that shows the same program in as many programming languages as you like, side by side, with syntax highlighting.
 
 Live at **https://shoshindev.github.io/syntax/**
 
