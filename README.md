@@ -2,7 +2,7 @@
 
 A web page for choosing your next programming language. It shows the same program in as many languages as you like, side by side, with syntax highlighting.
 
-Live at **https://shoshindev.github.io/syntax-comparison/**
+Live at **https://shoshindev.github.io/syntax/**
 
 - 25 programs from [Rosetta Code](https://rosettacode.org), from Hello world to Conway's Game of Life, in every language Rosetta Code has for them.
 - Add languages from a searchable list. When a language has several solutions, its card lets you switch between them.
@@ -13,8 +13,8 @@ Live at **https://shoshindev.github.io/syntax-comparison/**
 ## Run it locally
 
 ```bash
-git clone https://github.com/shoshindev/syntax-comparison.git
-cd syntax-comparison
+git clone https://github.com/shoshindev/syntax.git
+cd syntax
 npm run dev
 ```
 
@@ -38,7 +38,7 @@ The site is plain static files with no build step.
 
 1. Fork this repository on GitHub.
 2. In your fork, open **Settings → Pages**, choose **Deploy from a branch**, then branch `main` and folder `/ (root)`.
-3. After a minute the site is live at `https://<your-username>.github.io/syntax-comparison/`.
+3. After a minute the site is live at `https://<your-username>.github.io/syntax/`.
 
 ## Credits
 
